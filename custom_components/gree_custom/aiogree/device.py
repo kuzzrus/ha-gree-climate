@@ -213,7 +213,19 @@ class GreeDevice:
             props = [prop.value for prop in InfoProp]
             result = await self._client.query_props(props, len(props))
 
-        except GreeConnectionError, GreeProtocolError:
+        except GreeProtocolError as err:
+            _LOGGER.warning(
+                "[%s:%s] Device information batch is malformed (%s). "
+                "Retrying one property at a time",
+                self.unique_id,
+                self.transport,
+                err,
+            )
+            result = await self._client.query_props(
+                props, request_batch=1, error_as_missing=True, max_attempts=1
+            )
+
+        except GreeConnectionError:
             _LOGGER.exception(
                 "[%s:%s] Failed fetching device device info",
                 self.unique_id,
@@ -231,25 +243,24 @@ class GreeDevice:
                 f"Failed fetching device info for {self._mac_addr} via {self.transport}"
             ) from err
 
-        else:
-            _LOGGER.debug(
-                "[%s:%s] Got device info: %s",
-                self.unique_id,
-                self.transport,
-                result.prop_values,
-            )
+        _LOGGER.debug(
+            "[%s:%s] Got device info: %s",
+            self.unique_id,
+            self.transport,
+            result.prop_values,
+        )
 
-            self._state.process_new_state(result.prop_values)
+        self._state.process_new_state(result.prop_values)
 
-            _LOGGER.debug(self._state.info)
+        _LOGGER.debug(self._state.info)
 
-            self._firmware_protocol_version = self._state.info.get(
-                InfoProp.PROTOCOL_VERSION, ""
-            ).lstrip("V")
+        self._firmware_protocol_version = self._state.info.get(
+            InfoProp.PROTOCOL_VERSION, ""
+        ).lstrip("V")
 
-            self._firmware_version, self._firmware_code = extract_fw_version(
-                self._state.info.get(InfoProp.HID, "")
-            )
+        self._firmware_version, self._firmware_code = extract_fw_version(
+            self._state.info.get(InfoProp.HID, "")
+        )
 
     async def fetch_device_status(self) -> None:
         """Get the device status (async)."""

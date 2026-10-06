@@ -28,9 +28,11 @@ only on the indoor unit model. Known Airy model codes include
 GWH09AVCXB-K6DNA1B, GWH18AVDXE-K6DNA1A and GWH24AVEXF-K6DNA1A. See the
 [Airy guide](docs/gree-airy.md) before setup.
 
-Firmware V2.10 has been reported working with local control. Some V2.07 units
-have failed to bind even when UDP port 7000 was reachable. Cloud control is the
-fallback for a module that does not allow a local bind.
+Firmware V2.10 has been tested with local control and encryption version 2. The
+tested `4MWB65VR` module accepts status packets below about 800 bytes and returns
+some device information only when it is requested one field at a time. Some
+V2.07 units have failed to bind even when UDP port 7000 was reachable. Cloud
+control is the fallback for a module that does not allow a local bind.
 
 ## Kolin
 - Kolin KAG-100WCINV (encryption version 2)

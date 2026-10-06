@@ -138,6 +138,41 @@ async def test_bind_fetches_info_and_status(
     assert bound.power_mode is True
 
 
+async def test_bind_retries_a_malformed_device_info_batch(
+    gree_logs: RecordingHandler,
+) -> None:
+    """Airy V2.10 information is fetched one property at a time after a bad batch."""
+    unit = FakeGreeDevice(malformed_info_batch=True)
+    unit.values.update(LIVE_VALUES)
+    await unit.start()
+    transport: GreeUdpTransport | None = None
+
+    try:
+        device, transport = await bind(unit)
+
+        assert device.available
+        assert device.firmware_version == "3.75 (Protocol: 1.2.1)"
+        assert device.firmware_code == "362001065279 (UDP)"
+        assert any(
+            "Retrying one property at a time" in line for line in gree_logs.messages()
+        )
+
+        info_props = [prop.value for prop in InfoProp]
+        batch_index = next(
+            index
+            for index, pack in enumerate(unit.packs)
+            if pack.get("cols") == info_props
+        )
+        retry_requests = unit.packs[batch_index + 1 : batch_index + 1 + len(info_props)]
+        assert [request["cols"] for request in retry_requests] == [
+            [prop.value] for prop in InfoProp
+        ]
+    finally:
+        if transport is not None:
+            await transport.disconnect()
+        unit.close()
+
+
 async def test_bind_without_a_transport_is_refused() -> None:
     """There is nothing to talk over."""
     device = GreeDevice(name="Zolderkamer", mac_addr=DEFAULT_MAC)

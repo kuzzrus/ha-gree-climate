@@ -60,6 +60,7 @@ class FakeGreeDevice(asyncio.DatagramProtocol):
         raw_reply: bytes | None = None,
         reply_key: str | None = None,
         scan_info: dict[str, Any] | None = None,
+        malformed_info_batch: bool = False,
         stale_reads_after_cmd: int = 0,
         apply_commands: bool = True,
     ) -> None:
@@ -87,6 +88,8 @@ class FakeGreeDevice(asyncio.DatagramProtocol):
             reply_key: Encrypt replies with this key instead of the session
                 key, which is what a device with a rotated key looks like.
             scan_info: Extra fields for the scan reply, for example subCnt.
+            malformed_info_batch: Return one fewer value than columns when
+                device information is requested as a batch, as Airy V2.10 does.
             stale_reads_after_cmd: After a command, answer this many status
                 requests with the values from before the command, as a VRF
                 gateway does from its cache. Counted per request, and one poll
@@ -112,6 +115,7 @@ class FakeGreeDevice(asyncio.DatagramProtocol):
         self.raw_reply = raw_reply
         self.reply_key = reply_key
         self.scan_info = scan_info
+        self.malformed_info_batch = malformed_info_batch
         self.stale_reads_after_cmd = stale_reads_after_cmd
         self.apply_commands = apply_commands
 
@@ -355,12 +359,21 @@ class FakeGreeDevice(asyncio.DatagramProtocol):
                 self._stale_values = None
 
         answered = [col for col in cols if col not in self.unsupported_props]
+        data = [values.get(col, 0) for col in answered]
+        if (
+            self.malformed_info_batch
+            and len(answered) > 1
+            and "mac" in answered
+            and "ver" in answered
+        ):
+            data.pop()
+
         return {
             "t": "dat",
             "mac": self.mac,
             "r": 200,
             "cols": answered,
-            "dat": [values.get(col, 0) for col in answered],
+            "dat": data,
         }
 
     def build_command_result(self, pack: dict[str, Any]) -> dict[str, Any]:

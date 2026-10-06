@@ -56,6 +56,10 @@ There are reports of V2.07 units that answer on UDP port 7000 but do not complet
 the encrypted bind. See
 [upstream issue 468](https://github.com/RobHofmann/HomeAssistant-GreeClimateComponent/issues/468).
 
+Some V2.10 modules return an incomplete response when device information is
+requested in one batch. The integration detects this response and retries the
+information fields one at a time. This fallback is used only during binding.
+
 If local setup fails:
 
 1. Try cloud setup in the integration.

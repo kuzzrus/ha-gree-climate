@@ -29,19 +29,21 @@ import logging
 from pathlib import Path
 import sys
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "custom_components"))
+sys.path.insert(
+    0, str(Path(__file__).resolve().parents[1] / "custom_components" / "gree_custom")
+)
 
-from gree_custom.aiogree.api import (
+from aiogree.api import (
     _create_get_status_pack,
     _create_payload,
     gree_discover_device_local,
     gree_get_response_pack,
     gree_process_status_pack,
 )
-from gree_custom.aiogree.cipher import EncryptionVersion, get_cipher
-from gree_custom.aiogree.device import GreeDevice
-from gree_custom.aiogree.errors import GreeError
-from gree_custom.aiogree.transport_udp import GreeUdpTransport
+from aiogree.cipher import EncryptionVersion, get_cipher
+from aiogree.device import GreeDevice
+from aiogree.errors import GreeError
+from aiogree.transport_udp import GreeUdpTransport
 
 PROBE_TIMEOUT = 5.0
 COUNT_STEPS = (10, 20, 25, 28, 29, 30, 31, 32, 35, 40, 50, 60)
@@ -89,7 +91,7 @@ async def probe(dev: GreeDevice, cols: list[str], uid: int) -> str:
 async def bind(host: str, port: int, mac: str | None, uid: int) -> GreeDevice:
     """Discover (if needed) and bind the unit with the normal library code."""
     if mac is None:
-        found = await gree_discover_device_local(host, 5, uid)
+        found = await gree_discover_device_local(host, 5, 3, uid)
         if not found:
             raise SystemExit(f"No Gree unit answered a scan at {host}")
         mac = found[0].mac
