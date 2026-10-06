@@ -1,104 +1,104 @@
-# Gree Airy Climate for Home Assistant
+# Gree Airy для Home Assistant
 
-[![GitHub Release](https://img.shields.io/github/v/release/kuzzrus/ha-gree-climate?sort=semver)](https://github.com/kuzzrus/ha-gree-climate/releases)
-[![License](https://img.shields.io/github/license/kuzzrus/ha-gree-climate)](LICENSE)
+[![Последний релиз](https://img.shields.io/github/v/release/kuzzrus/ha-gree-climate?sort=semver)](https://github.com/kuzzrus/ha-gree-climate/releases)
+[![Лицензия](https://img.shields.io/github/license/kuzzrus/ha-gree-climate)](LICENSE)
 [![HACS](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://hacs.xyz)
 [![Home Assistant](https://img.shields.io/badge/Compatible-Home_Assistant_2026.3+-blue.svg)](https://www.home-assistant.io)
 
-[![Validate](https://github.com/kuzzrus/ha-gree-climate/actions/workflows/validate.yaml/badge.svg)](https://github.com/kuzzrus/ha-gree-climate/actions/workflows/validate.yaml)
-[![Lint](https://github.com/kuzzrus/ha-gree-climate/actions/workflows/lint.yml/badge.svg)](https://github.com/kuzzrus/ha-gree-climate/actions/workflows/lint.yml)
+[![Проверка](https://github.com/kuzzrus/ha-gree-climate/actions/workflows/validate.yaml/badge.svg)](https://github.com/kuzzrus/ha-gree-climate/actions/workflows/validate.yaml)
+[![Линтер](https://github.com/kuzzrus/ha-gree-climate/actions/workflows/lint.yml/badge.svg)](https://github.com/kuzzrus/ha-gree-climate/actions/workflows/lint.yml)
 
-Gree integration for Home Assistant, with a setup guide for Gree Airy. It controls Gree air conditioners, and the many brands that use the Gree protocol, over your local network or through the Gree cloud.
+Интеграция Gree для Home Assistant с отдельным руководством по настройке Gree Airy. Она управляет кондиционерами Gree и устройствами других брендов, которые используют протокол Gree. Поддерживается работа через локальную сеть и облако Gree.
 
-This repository is a modified fork of
-[HomeAssistant-GreeClimateComponent](https://github.com/RobHofmann/HomeAssistant-GreeClimateComponent),
-based on its `5.0-dev` branch at commit `2865cdefc60800931c5cfb1bcf30fc450601fdec`.
-Fork-specific work started on 2026-10-06.
+Этот репозиторий является изменённым форком
+[HomeAssistant-GreeClimateComponent](https://github.com/RobHofmann/HomeAssistant-GreeClimateComponent).
+За основу взята ветка `5.0-dev`, коммит `2865cdefc60800931c5cfb1bcf30fc450601fdec`.
+Разработка этого форка началась 6 октября 2026 года.
 
-## 📖 Documentation
+## Документация
 
-**[Complete documentation](docs/README.md)**, in the `docs/` folder of this repository:
+Полная документация находится в каталоге **[docs](docs/README.md)**:
 
-- **[👤 User documentation](docs/README.md#user-documentation)**: installation, configuration, entities, actions, troubleshooting
-- **[🔧 Developer documentation](docs/README.md#developer-documentation)**: architecture, protocol, config entry, development
+- **[Документация пользователя](docs/README.md#user-documentation)**: установка, настройка, сущности, действия и устранение неполадок
+- **[Документация разработчика](docs/README.md#developer-documentation)**: архитектура, протокол, конфигурационные записи и разработка
 
-**Quick links:**
-[Installation](docs/installation.md) · [Gree Airy](docs/gree-airy.md) · [Configuration](docs/configuration.md) · [Entities](docs/entities.md) · [Automation examples](docs/automation-examples.md) · [Troubleshooting](docs/troubleshooting.md) · [Supported devices](supported-devices.md) · [Releases](https://github.com/kuzzrus/ha-gree-climate/releases)
+Быстрые ссылки:
+[установка](docs/installation.md) · [Gree Airy](docs/gree-airy.md) · [настройка](docs/configuration.md) · [сущности](docs/entities.md) · [примеры автоматизаций](docs/automation-examples.md) · [устранение неполадок](docs/troubleshooting.md) · [поддерживаемые устройства](supported-devices.md) · [релизы](https://github.com/kuzzrus/ha-gree-climate/releases)
 
-## ✨ Why this integration?
+## Возможности интеграции
 
-Home Assistant ships a `gree` integration that works on the local network only. This one goes further.
+В Home Assistant уже есть встроенная интеграция `gree`, которая работает только через локальную сеть. Эта интеграция предлагает больше возможностей.
 
-- **Local first, cloud when you need it.** Devices are controlled over UDP on your own network. The Gree cloud is there for devices you cannot reach, and to fetch device names and encryption keys during setup. See [connection methods](docs/connection-methods.md).
-- **The features on the remote.** X-Fan, Health, Sleep, 8°C Smart Heat, Power Save, Anti Direct Blow, Fresh Air, Humidity Control, display light and brightness, beeper, Turbo and Quiet. Each one is a switch, select or fan mode. See [entities](docs/entities.md).
-- **Swing positions.** Twelve vertical and seven horizontal modes: fixed positions and partial swing ranges, not just on and off.
-- **Sensors.** Indoor and outdoor temperature, humidity and fault detection, when the unit has them. An external sensor can replace the unit's own reading in the climate entity. That changes only what Home Assistant shows; the unit keeps using its own sensor.
-- **Works across VLANs.** Add networks or hosts to the discovery, and they are probed with unicast. See [local discovery](docs/configuration.md#local-discovery).
-- **VRF systems.** A controller with several indoor units is discovered and set up as separate devices.
-- **Built for real firmware.** Both encryption versions, detected by itself. The request limit of each firmware is measured at bind time, so units that choke on large requests still work. A changed IP is picked up from DHCP or by rediscovery.
-- **Set up your way.** A UI flow with reconfigure, or a `gree_custom:` block in YAML. See [configuration](docs/configuration.md).
-- **Diagnostics.** A diagnostics download, repair issues, and two actions that read raw device properties. See [actions](docs/actions.md).
+- **Локальное управление и облачное подключение.** По умолчанию устройства управляются по UDP в локальной сети. Облако Gree можно использовать для недоступных локально устройств, а также для получения имён и ключей шифрования во время настройки. Подробнее в разделе [способы подключения](docs/connection-methods.md).
+- **Функции с пульта.** X-Fan, Health, Sleep, умный обогрев до 8 °C, энергосбережение, Anti Direct Blow, Fresh Air, управление влажностью, подсветка и яркость дисплея, звуковой сигнал, Turbo и Quiet. Функции представлены переключателями, списками выбора или режимами вентилятора. Подробнее в разделе [сущности](docs/entities.md).
+- **Положения жалюзи.** Двенадцать вертикальных и семь горизонтальных режимов: фиксированные положения и частичные диапазоны качания.
+- **Датчики.** Температура в помещении и снаружи, влажность и обнаружение неисправностей, если устройство передаёт эти данные. Внешний датчик может заменить показания самого кондиционера в климатической сущности. Это меняет только данные в Home Assistant. Сам кондиционер продолжает использовать встроенный датчик.
+- **Работа между VLAN.** Для обнаружения можно указать дополнительные сети или адреса устройств. Опрос выполняется одноадресными запросами. Подробнее в разделе [локальное обнаружение](docs/configuration.md#local-discovery).
+- **Системы VRF.** Контроллер с несколькими внутренними блоками обнаруживается и настраивается как отдельные устройства.
+- **Поддержка разных прошивок.** Версия шифрования определяется автоматически. Допустимый размер запроса измеряется при привязке, поэтому работают и устройства, которые не принимают большие запросы. Изменившийся IP-адрес обновляется через DHCP или повторное обнаружение.
+- **Удобная настройка.** Можно использовать интерфейс Home Assistant с повторной настройкой или блок `gree_custom:` в YAML. Подробнее в разделе [настройка](docs/configuration.md).
+- **Диагностика.** Доступны выгрузка диагностических данных, уведомления о проблемах и два действия для чтения необработанных свойств устройства. Подробнее в разделе [действия](docs/actions.md).
 
-## 🚀 Quick start
+## Быстрый запуск
 
-### Step 1: install with HACS
+### Шаг 1. Установка через HACS
 
-[HACS](https://hacs.xyz/) must be installed. Open the button below, or add
-`https://github.com/kuzzrus/ha-gree-climate` as a custom integration repository.
+Для установки требуется [HACS](https://hacs.xyz/). Нажмите кнопку ниже или добавьте
+`https://github.com/kuzzrus/ha-gree-climate` как пользовательский репозиторий интеграции.
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=kuzzrus&repository=ha-gree-climate&category=integration)
+[![Открыть репозиторий в HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=kuzzrus&repository=ha-gree-climate&category=integration)
 
-1. Click **Download**.
-2. Restart Home Assistant.
+1. Нажмите **Download**.
+2. Перезапустите Home Assistant.
 
-### Step 2: add the integration
+### Шаг 2. Добавление интеграции
 
-[![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=gree_custom)
+[![Добавить интеграцию Gree Climate](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=gree_custom)
 
-Or by hand: **Settings** > **Devices & Services** > **Add Integration** > search for **Gree Climate**.
+Также можно открыть **Настройки** > **Устройства и службы** > **Добавить интеграцию** и найти **Gree Climate**.
 
-1. Pick **Local network**, **Gree Cloud account**, or both.
-2. Pick the devices from the list.
-3. Check the connection options and the features of each device. The defaults work for most units.
+1. Выберите **Local network**, **Gree Cloud account** или оба способа подключения.
+2. Выберите устройства из списка.
+3. Проверьте параметры подключения и доступные функции каждого устройства. Настройки по умолчанию подходят для большинства кондиционеров.
 
-### Step 3: done
+### Шаг 3. Готово
 
-Your devices are under **Settings** > **Devices & Services** > **Gree Climate**. Each one has a climate entity, sensors and switches. See [entities](docs/entities.md) for what they do, and [automation examples](docs/automation-examples.md) for ideas.
+Устройства появятся в разделе **Настройки** > **Устройства и службы** > **Gree Climate**. Для каждого устройства будут созданы климатическая сущность, датчики и переключатели. Описание доступно в разделе [сущности](docs/entities.md), а готовые идеи находятся в [примерах автоматизаций](docs/automation-examples.md).
 
-📖 **[Full installation guide](docs/installation.md)** · **[Full configuration guide](docs/configuration.md)**
+**[Полное руководство по установке](docs/installation.md)** · **[Полное руководство по настройке](docs/configuration.md)**
 
-## ❓ Help and support
+## Помощь и поддержка
 
-- 💬 **[Upstream Discord](https://discord.gg/JPcBkvRhTS)**: questions and chat with users of the upstream integration. Report fork bugs in this repository.
-- 🔧 **[Troubleshooting](docs/troubleshooting.md)**: debug logging, repair issues, common errors, and how to report a bug
-- ❄️ **[Gree Airy](docs/gree-airy.md)**: setup, feature mapping and Wi-Fi firmware limits
-- 🔑 **[Encryption key](docs/encryption-key.md)**: when the integration cannot get the device key by itself
-- 📋 **[Supported devices](supported-devices.md)**: units that are known to work, and how to add yours
-- 🐛 **[Report an issue](https://github.com/kuzzrus/ha-gree-climate/issues/new/choose)**: read [Troubleshooting](docs/troubleshooting.md) first, it says what to include
+- **[Discord исходного проекта](https://discord.gg/JPcBkvRhTS)**: вопросы и общение с пользователями исходной интеграции. Ошибки этого форка следует сообщать в данном репозитории.
+- **[Устранение неполадок](docs/troubleshooting.md)**: отладочное журналирование, уведомления о проблемах, частые ошибки и правила оформления отчёта об ошибке.
+- **[Gree Airy](docs/gree-airy.md)**: настройка, соответствие функций и ограничения прошивки Wi-Fi.
+- **[Ключ шифрования](docs/encryption-key.md)**: что делать, если интеграция не может получить ключ устройства автоматически.
+- **[Поддерживаемые устройства](supported-devices.md)**: проверенные модели и инструкция по добавлению своей.
+- **[Сообщить об ошибке](https://github.com/kuzzrus/ha-gree-climate/issues/new/choose)**: сначала прочитайте раздел [устранение неполадок](docs/troubleshooting.md), где указаны необходимые сведения.
 
-## 🤝 Contributing
+## Участие в разработке
 
-Contributions are welcome. Start with the [contributing guidelines](CONTRIBUTING.md) and the [developer documentation](docs/README.md#developer-documentation).
+Предложения и исправления приветствуются. Начните с [правил участия](CONTRIBUTING.md) и [документации разработчика](docs/README.md#developer-documentation).
 
-- **[Development](docs/development.md)**: the devcontainer, lint, the test suite, debug logs, releases
-- **[Architecture](docs/architecture.md)**: where the code lives and how a device comes to life
-- **[Protocol notes](docs/protocol.md)**: what real units do on the wire
-- **[AGENTS.md](AGENTS.md)**: the entry point for coding agents
+- **[Разработка](docs/development.md)**: devcontainer, линтеры, тесты, отладочные журналы и релизы.
+- **[Архитектура](docs/architecture.md)**: расположение кода и жизненный цикл устройства.
+- **[Описание протокола](docs/protocol.md)**: обмен данными с реальными устройствами.
+- **[AGENTS.md](AGENTS.md)**: начальная инструкция для программных агентов.
 
-Quality is guarded by Ruff, Pylint and Mypy, a pytest suite for the protocol layer, and tests against real units.
+Качество кода проверяется Ruff, Pylint, Mypy, тестами pytest для протокольного слоя и испытаниями на реальных устройствах.
 
-## 📄 License
+## Лицензия
 
-This project is licensed under the GNU General Public License v3.0. See [LICENSE](LICENSE).
+Проект распространяется по лицензии GNU General Public License v3.0. Подробнее в файле [LICENSE](LICENSE).
 
-## 🙏 Credits
+## Благодарности
 
-This project is based on the work of several contributors and projects:
+Проект основан на работе авторов и участников следующих проектов:
 
-- [HomeAssistant-GreeClimateComponent](https://github.com/RobHofmann/HomeAssistant-GreeClimateComponent) - the upstream integration and the base of this fork
-- [greeclimate-js](https://github.com/davo22/greeclimate-js) - TypeScript library for controlling Gree-based mini-split air conditioning systems
-- [greeclimate](https://github.com/davo22/greeclimate) - A fully async Python3 based package for controlling Gree based ACs and heat pumps
-- [gree-remote](https://github.com/tomikaa87/gree-remote) - Gree air conditioner remote control protocol
-- [greeclimate](https://github.com/cmroche/greeclimate) - Python package for controlling Gree based minisplit systems
-- [gree-api-client](https://github.com/luc10/gree-api-client) - Python client for the Gree API
-- [Home Assistant Developer Documentation](https://developers.home-assistant.io) - Official development guidelines and best practices
+- [HomeAssistant-GreeClimateComponent](https://github.com/RobHofmann/HomeAssistant-GreeClimateComponent): исходная интеграция и основа этого форка.
+- [greeclimate-js](https://github.com/davo22/greeclimate-js): библиотека TypeScript для управления сплит-системами на основе протокола Gree.
+- [greeclimate](https://github.com/davo22/greeclimate): асинхронная библиотека Python 3 для управления кондиционерами и тепловыми насосами Gree.
+- [gree-remote](https://github.com/tomikaa87/gree-remote): описание протокола дистанционного управления кондиционерами Gree.
+- [greeclimate](https://github.com/cmroche/greeclimate): пакет Python для управления сплит-системами Gree.
+- [gree-api-client](https://github.com/luc10/gree-api-client): клиент Gree API на Python.
+- [Документация разработчика Home Assistant](https://developers.home-assistant.io): официальные рекомендации и правила разработки.
