@@ -25,6 +25,8 @@
 Быстрые ссылки:
 [установка](docs/installation.md) · [Gree Airy](docs/gree-airy.md) · [настройка](docs/configuration.md) · [сущности](docs/entities.md) · [примеры автоматизаций](docs/automation-examples.md) · [устранение неполадок](docs/troubleshooting.md) · [поддерживаемые устройства](supported-devices.md) · [релизы](https://github.com/kuzzrus/ha-gree-climate/releases)
 
+Для передачи кондиционера в «Дом с Алисой» используйте готовую настройку для **[Yandex Smart Home и Yaha Cloud](docs/yandex-smart-home.md)**. Она задаёт тип «Кондиционер» и заменяет цифровые кнопки направления воздуха и скорости вентилятора понятными режимами.
+
 ## Возможности интеграции
 
 В Home Assistant уже есть встроенная интеграция `gree`, которая работает только через локальную сеть. Эта интеграция предлагает больше возможностей.

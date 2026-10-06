@@ -15,6 +15,7 @@ All docs follow the writing rules in `AGENTS.md`: plain English, short sentences
 | [entities.md](entities.md) | You want to know which entities you get, what they do, and when they are available. |
 | [actions.md](actions.md) | You want to read raw device properties, or download diagnostics. |
 | [automation-examples.md](automation-examples.md) | You want ideas for automations with the climate entity, the switches and the sensors. |
+| [yandex-smart-home.md](yandex-smart-home.md) | You expose the air conditioner through Yandex Smart Home or Yaha Cloud and need the correct device type and mode buttons. |
 | [encryption-key.md](encryption-key.md) | The integration cannot get the device key by itself. |
 | [troubleshooting.md](troubleshooting.md) | Something does not work. Debug logging, repair issues, common errors, and how to report a bug. |
 | [../supported-devices.md](../supported-devices.md) | You want to know if your unit is known to work. |
