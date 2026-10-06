@@ -2,7 +2,7 @@ name: Release publish
 
 on:
   push:
-    branches: [master]
+    branches: [main]
     paths:
       - 'custom_components/gree_custom/manifest.json'
 
@@ -13,7 +13,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout master
+      - name: Checkout main
         uses: actions/checkout@v6
         with:
           fetch-depth: 0

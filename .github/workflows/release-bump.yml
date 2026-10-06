@@ -33,10 +33,10 @@ jobs:
   bump:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout master
+      - name: Checkout main
         uses: actions/checkout@v6
         with:
-          ref: master
+          ref: main
           fetch-depth: 0
 
       - name: Compute next version
@@ -81,7 +81,7 @@ jobs:
         run: |
           set -euo pipefail
           gh pr create \
-            --base master \
+            --base main \
             --head "release/${NEW}" \
             --title "Release ${NEW}" \
             --body "Bumps manifest version to \`${NEW}\`.
