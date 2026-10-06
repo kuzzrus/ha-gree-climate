@@ -81,7 +81,7 @@ The integration raises repair issues under **Settings** > **System** > **Repairs
 
 **The device is on another VLAN and is not found.** Broadcasts do not cross VLANs. Add the network or the IP under **Extra Networks** or **Extra Hosts**, and allow UDP 7000 in the firewall.
 
-**Two Gree integrations show up.** Home Assistant ships its own `gree` integration. This one is called **Gree Climate** in the setup dialog and has the domain `gree_custom`. Both can be installed, but do not add the same device to both.
+**Two Gree integrations show up.** Home Assistant ships its own `gree` integration. This one is called **Кондиционер Gree** in the setup dialog and has the domain `gree_custom`. Both can be installed, but do not add the same device to both.
 
 ## How to report a bug
 

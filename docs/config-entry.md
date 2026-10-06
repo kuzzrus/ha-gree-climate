@@ -79,7 +79,7 @@ Releases 4.x used the domain `gree` and a flat entry: one device per entry, all 
 Home Assistant only sets up an integration that has a config entry or a YAML key. After an update through HACS, `gree_custom` has neither. HACS also leaves the old `custom_components/gree` folder in place: it installs into the folder named after the new domain and only removes a folder on uninstall. So something else has to start `gree_custom` once:
 
 - The last 4.x release calls `async_setup_component("gree_custom")` from its own `async_setup` when that integration is installed. This is the path without user action.
-- Without that release, the setup flow starts it. `async_step_user` and `async_step_dhcp` call `async_setup_from_flow()`, which sets the integration up when it is not set up yet and 4.x entries exist. The flow then stops with `legacy_migration_started`. So a user who opens **Add Integration** > **Gree A/C** starts the migration with that one action.
+- Without that release, the setup flow starts it. `async_step_user` and `async_step_dhcp` call `async_setup_from_flow()`, which sets the integration up when it is not set up yet and 4.x entries exist. The flow then stops with `legacy_migration_started`. So a user who opens **Add Integration** > **Кондиционер Gree** starts the migration with that one action.
 
 After the first run `gree_custom` has its own entry and starts by itself.
 

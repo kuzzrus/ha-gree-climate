@@ -224,9 +224,9 @@ class SetupConfigFlow(ConfigFlow, domain=DOMAIN):
         }
         cloud_data: dict[str, Any] = stored_cloud or {}
         title = (
-            f"Gree Account: {cloud_data.get(CONF_UID)} ({cloud_data.get(CONF_EMAIL)})"
+            f"Учётная запись Gree: {cloud_data.get(CONF_UID)} ({cloud_data.get(CONF_EMAIL)})"
             if cloud_data.get(CONF_EMAIL)
-            else "Local-only Devices"
+            else "Локальные устройства"
         )
 
         entry = self.hass.config_entries.async_entry_for_domain_unique_id(
@@ -321,7 +321,7 @@ class SetupConfigFlow(ConfigFlow, domain=DOMAIN):
             )
 
         return self.async_create_entry(
-            title="Local-only Devices",
+            title="Локальные устройства",
             data={CONF_CLOUD: None, CONF_DEVICES: new_devices},
         )
 
@@ -974,7 +974,7 @@ class SetupConfigFlow(ConfigFlow, domain=DOMAIN):
             cloud_conf: dict[str, str] = self._config_data.get(CONF_CLOUD, {})
             return self.async_update_reload_and_abort(
                 self._get_reauth_entry(),
-                title=f"Gree Account: {cloud_conf.get(CONF_UID)} ({cloud_conf.get(CONF_EMAIL)})",
+                title=f"Учётная запись Gree: {cloud_conf.get(CONF_UID)} ({cloud_conf.get(CONF_EMAIL)})",
                 data_updates={CONF_CLOUD: cloud_conf},
             )
 
@@ -1069,9 +1069,9 @@ class SetupConfigFlow(ConfigFlow, domain=DOMAIN):
 
         cloud_conf: dict[str, str] = self._config_data.get(CONF_CLOUD, {})
         title = (
-            f"Gree Account: {cloud_conf.get(CONF_UID)} ({cloud_conf.get(CONF_EMAIL)})"
+            f"Учётная запись Gree: {cloud_conf.get(CONF_UID)} ({cloud_conf.get(CONF_EMAIL)})"
             if cloud_conf.get(CONF_EMAIL)
-            else "Local-only Devices"
+            else "Локальные устройства"
         )
 
         if update_entry:

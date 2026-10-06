@@ -18,7 +18,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .aiogree.api import HumidityControlMode, OperationMode
 from .aiogree.const import MAX_HUM_COOL_P, MAX_HUM_DRY_P, MIN_HUM_COOL_P, MIN_HUM_DRY_P
 from .aiogree.device import GreeDevice
-from .const import GATTR_FEAT_HUMIDITY, GATTR_FEAT_HUMIDITY_TARGET
+from .const import DOMAIN, GATTR_FEAT_HUMIDITY, GATTR_FEAT_HUMIDITY_TARGET
 from .coordinator import GreeConfigEntry, GreeCoordinator
 from .entity import GreeEntity, GreeEntityDescription
 from .platform_helpers import supported_descriptions
@@ -157,7 +157,9 @@ class GreeNumber(GreeEntity, NumberEntity):  # pyright: ignore[reportIncompatibl
     async def async_set_native_value(self, value: float) -> None:
         """Update the current value."""
         if not self.available:
-            raise HomeAssistantError("Entity unavailable")
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="entity_unavailable"
+            )
 
         try:
             self.entity_description.set_func(self.device, int(value))
@@ -169,6 +171,8 @@ class GreeNumber(GreeEntity, NumberEntity):  # pyright: ignore[reportIncompatibl
             self.coordinator.async_update_listeners()
 
         except Exception as err:
-            raise HomeAssistantError("Failed to turn on switch") from err
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="generic"
+            ) from err
 
         self.async_write_ha_state()

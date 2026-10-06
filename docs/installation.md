@@ -14,7 +14,7 @@ Install this fork as a custom HACS repository.
 1. Open HACS in Home Assistant.
 2. Open the three dot menu and select **Custom repositories**.
 3. Add `https://github.com/kuzzrus/ha-gree-climate` with the **Integration** category.
-4. Search for **Gree A/C** and click **Download**.
+4. Search for **Кондиционер Gree** and click **Download**.
 5. Restart Home Assistant.
 
 HACS also offers updates when a new version is published.
@@ -45,7 +45,7 @@ Releases 4.x used the domain `gree`. This version uses the domain `gree_custom`,
 Your devices move to this version by themselves. Their entity IDs, areas, names and history stay, so your automations, scripts and dashboards keep working.
 
 1. Update through HACS and restart Home Assistant.
-2. The devices move at that start. If you came from a 4.x release older than the last one, nothing happens yet. Then go to **Settings** > **Devices & Services** > **Add Integration**, pick **Gree A/C**, and the move starts. You do not have to fill in anything.
+2. The devices move at that start. If you came from a 4.x release older than the last one, nothing happens yet. Then go to **Settings** > **Devices & Services** > **Add Integration**, pick **Кондиционер Gree**, and the move starts. You do not have to fill in anything.
 3. HACS leaves the old `custom_components/gree` folder in place. A repair issue asks you to delete it. Delete the folder and restart. The old 4.x entries stay, disabled, so you can go back to 4.x. A second repair issue, **Remove the old Gree 4.x config entries**, lets you remove them when you are sure you will not go back.
 4. If you used a `gree:` block in `configuration.yaml`, it keeps working for now. A repair issue shows the `gree_custom:` block that replaces it. See [Legacy gree: block](configuration.md#legacy-gree-block).
 

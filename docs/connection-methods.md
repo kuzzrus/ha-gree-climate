@@ -11,7 +11,7 @@ The cloud can also improve a local device. During setup it gives the device name
 
 The integration creates more than one config entry on purpose.
 
-- One entry named **Local-only Devices** holds every device that is set up without a cloud account.
+- One entry named **Локальные устройства** holds every device that is set up without a cloud account.
 - One entry per Gree account holds the devices of that account, whether they are controlled locally or through the cloud.
 
 A device can be in one entry only. Adding a device that is already configured is refused.
@@ -22,7 +22,7 @@ The device page under **Settings** > **Devices & Services** shows which connecti
 
 Choose **Local network** as the discovery method. The integration sends a discovery broadcast on every network that Home Assistant is connected to. You can add more networks and single hosts, for devices on another subnet or VLAN. Those are probed one address at a time. See [Local discovery](configuration.md#local-discovery).
 
-The list of found devices leaves out devices that are already configured. The devices you pick are added to the **Local-only Devices** entry.
+The list of found devices leaves out devices that are already configured. The devices you pick are added to the **Локальные устройства** entry.
 
 ## Cloud-only setup
 

@@ -178,7 +178,7 @@ Never log an encryption key, cloud password or token in clear text.
 
 - The version lives in `manifest.json` and nowhere else.
 - The maintainers own the version. Releases are cut with the workflows in `.github/workflows/`, which bump `manifest.json` and publish the release. Do not change the version in a normal PR unless a maintainer asks for it.
-- Pre-release versions look like `5.0.0-alpha.107`. They are not tags or GitHub releases, so an exact pre-release cannot always be checked out again later.
+- Pre-release versions look like `1.0.0-alpha.1`. Published versions have matching Git tags and GitHub releases.
 
 ## CI
 

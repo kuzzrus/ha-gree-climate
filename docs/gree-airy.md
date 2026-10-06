@@ -18,7 +18,7 @@ describes the updated Wi-Fi and Bluetooth module.
 
 1. Install the integration and restart Home Assistant.
 2. Go to **Settings** > **Devices & Services** > **Add Integration**.
-3. Search for **Gree Climate**.
+3. Search for **Кондиционер Gree**.
 4. Pick **Local network** first. If the unit is on another VLAN, add its IP
    under **Extra Hosts**.
 5. Leave **Encryption Version** on **Auto-Detect**.

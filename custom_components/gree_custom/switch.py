@@ -283,7 +283,9 @@ class GreeSwitch(GreeEntity, SwitchEntity, RestoreEntity):  # pyright: ignore[re
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the switch on."""
         if not self.available:
-            raise HomeAssistantError("Entity unavailable")
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="entity_unavailable"
+            )
 
         try:
             self.entity_description.set_func(self.device, self.coordinator, True)
@@ -299,7 +301,9 @@ class GreeSwitch(GreeEntity, SwitchEntity, RestoreEntity):  # pyright: ignore[re
             ):  # ignore HA-only dependent entities
                 await self.coordinator.async_request_refresh()
         except Exception as err:
-            raise HomeAssistantError("Failed to turn on switch") from err
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="generic"
+            ) from err
 
         self.async_write_ha_state()
 
@@ -307,7 +311,9 @@ class GreeSwitch(GreeEntity, SwitchEntity, RestoreEntity):  # pyright: ignore[re
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the switch on."""
         if not self.available:
-            raise HomeAssistantError("Entity unavailable")
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="entity_unavailable"
+            )
 
         try:
             self.entity_description.set_func(self.device, self.coordinator, False)
@@ -323,6 +329,8 @@ class GreeSwitch(GreeEntity, SwitchEntity, RestoreEntity):  # pyright: ignore[re
             ):  # ignore HA-only dependent entities
                 await self.coordinator.async_request_refresh()
         except Exception as err:
-            raise HomeAssistantError("Failed to turn off switch") from err
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="generic"
+            ) from err
 
         self.async_write_ha_state()

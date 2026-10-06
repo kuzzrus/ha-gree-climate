@@ -5,7 +5,7 @@ You can set the integration up in the UI or in YAML. The UI is the normal way. Y
 ## UI setup
 
 1. Go to **Settings** > **Devices & Services** and click **Add Integration**.
-2. Search for **Gree Climate**.
+2. Search for **Кондиционер Gree**.
 3. Pick one or both discovery methods: **Local network** and **Gree Cloud account**. See [connection-methods.md](connection-methods.md) for what each one means.
 4. Fill in the cloud login, the local discovery options, or both.
 5. Pick the devices to add from the list of discovered devices.
@@ -102,7 +102,7 @@ The external sensors only change what the climate entity shows. The unit keeps u
 
 Open the entry under **Settings** > **Devices & Services**, click the three dots and choose **Reconfigure**. The flow runs again with your current values filled in. Saving reloads the entry, so the change works right away without a restart.
 
-- On the **Local-only Devices** entry the flow starts at local discovery.
+- On the **Локальные устройства** entry the flow starts at local discovery.
 - On an account entry the flow first asks whether to also look for local devices. The account itself cannot be removed from the entry. To make a device local-only, remove it from the account entry and add it again with the local method.
 
 > [!WARNING]
@@ -110,7 +110,7 @@ Open the entry under **Settings** > **Devices & Services**, click the three dots
 
 ## Removing a device
 
-Open the device page and choose **Delete** from the three dot menu. The device is removed from its entry. When the **Local-only Devices** entry becomes empty, the entry is removed too.
+Open the device page and choose **Delete** from the three dot menu. The device is removed from its entry. When the **Локальные устройства** entry becomes empty, the entry is removed too.
 
 ## Automatic IP updates
 
