@@ -6,7 +6,10 @@ A time out means the device did not answer a UDP packet. In almost every case th
 
 1. **Can Home Assistant reach the device?** Ping the IP from the Home Assistant host. A device that does not answer a ping is asleep, on another network, or has a new IP.
 2. **Is UDP port 7000 open on the way?** Devices on another VLAN need a firewall rule that allows UDP 7000 from Home Assistant to the device. See [Local discovery](configuration.md#local-discovery).
-3. **Does the device still have the same IP?** Give it a fixed IP in your router. The integration updates the IP by itself after a DHCP change, but only when it can reach the device with a broadcast. See [Automatic IP updates](configuration.md#automatic-ip-updates).
+3. **Does the device still have the same IP?** The integration matches the
+   controller MAC and can recover a changed IP on the same local subnet. Give
+   it a fixed IP in your router when it is on another VLAN. See
+   [Automatic IP updates](configuration.md#automatic-ip-updates).
 4. **Is something else talking to the device?** Two clients that bind to one unit fight over the session key. Stop other integrations, bridges or scripts that use the same device.
 5. **Does the device answer the app?** If the Gree app cannot control the device locally either, the device or its Wi-Fi module is the problem.
 6. **Does the device refuse the key exchange?** Then the error is **Unable to bind the device**, not a time out. See [encryption-key.md](encryption-key.md).

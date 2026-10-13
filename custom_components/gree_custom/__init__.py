@@ -212,41 +212,62 @@ async def async_setup_entry(hass: HomeAssistant, entry: GreeConfigEntry) -> bool
             user_id=uid,
         )
 
+        bind_options: dict[str, Any] = {
+            "preferred_local_version": preferred_local_version,
+            "local_controller_mac": mac_controller_local,
+            "local_transport": None
+            if prefer_cloud
+            else local_transports.get(mac_controller_local),
+            "mqtt_controller_mac": mac_controller_cloud,
+            "mqtt_transport": mqtt_transport,
+        }
+
         try:
-            await device.bind_with_transport(
-                preferred_local_version=preferred_local_version,
-                local_controller_mac=mac_controller_local,
-                local_transport=None
-                if prefer_cloud
-                else local_transports.get(mac_controller_local),
-                mqtt_controller_mac=mac_controller_cloud,
-                mqtt_transport=mqtt_transport,
-            )
+            await device.bind_with_transport(**bind_options)
         except MqttConnectError as err:
             raise ConfigEntryAuthFailed("bad_credentials") from err
         except GreeConnectionError:
             if not await try_find_new_ip(hass, device, entry):
                 _LOGGER.exception("Error setting up device %s", mac)
                 create_device_connection_issue(hass, entry.entry_id, mac, name)
+                continue
+
+            _LOGGER.info("Retrying setup for device %s after IP recovery", mac)
+            try:
+                await device.bind_with_transport(**bind_options)
+            except MqttConnectError as retry_err:
+                raise ConfigEntryAuthFailed("bad_credentials") from retry_err
+            except GreeConnectionError:
+                _LOGGER.exception(
+                    "Error setting up device %s after IP recovery", mac
+                )
+                create_device_connection_issue(hass, entry.entry_id, mac, name)
+                continue
+            except Exception as retry_err:
+                _LOGGER.exception(
+                    "Error setting up device %s after IP recovery", mac
+                )
+                create_device_connection_issue(hass, entry.entry_id, mac, name)
+                raise ConfigEntryNotReady from retry_err
         except Exception as err:
             _LOGGER.exception("Error setting up device %s", mac)
             create_device_connection_issue(hass, entry.entry_id, mac, name)
             raise ConfigEntryNotReady from err
-        else:
-            delete_device_connection_issue(hass, entry.entry_id, mac)
 
-            coordinators[mac] = GreeCoordinator(
-                hass=hass,
-                config_entry=entry,
-                scan_interval=scan_interval,
-                check_availability=not disable_available_check,
-                restore_states=options.get(CONF_RESTORE_STATES, DEFAULT_RESTORE_STATES),
-                device_config=dev_config,
-                device=device,
-            )
-            await coordinators[device.mac_address].async_config_entry_first_refresh()
+        delete_device_connection_issue(hass, entry.entry_id, mac)
 
-            _LOGGER.debug("Setup entry '%s': Bound to device %s", entry.entry_id, mac)
+        coordinators[mac] = GreeCoordinator(
+            hass=hass,
+            config_entry=entry,
+            scan_interval=scan_interval,
+            check_availability=not disable_available_check,
+            restore_states=options.get(CONF_RESTORE_STATES, DEFAULT_RESTORE_STATES),
+            device_config=dev_config,
+            device=device,
+        )
+        await coordinators[device.mac_address].async_config_entry_first_refresh()
+
+        _LOGGER.debug("Setup entry '%s': Bound to device %s", entry.entry_id, mac)
 
     # Clear MQTT Transport if not used
     if mqtt_transport and not any(

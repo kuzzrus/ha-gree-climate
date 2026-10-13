@@ -37,6 +37,7 @@ from .const import (
     VRF_CONTROLLER_ID_PREFIX,
     VRF_CONTROLLER_TRANSLATION_KEY,
 )
+from .network_recovery import recovery_hosts
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -124,6 +125,7 @@ def _expand_unicast_targets(
 
 async def get_discovery_addresses(
     hass: HomeAssistant,
+    recovery_host: str | None = None,
 ) -> list[str]:
     """Gathers a list of broadcast and unicast addresses."""
 
@@ -144,7 +146,38 @@ async def get_discovery_addresses(
     unicast_addresses = _expand_unicast_targets(extra_networks, extra_hosts)
     addresses.extend(unicast_addresses)
 
+    if recovery_host:
+        try:
+            adapters = await network.async_get_adapters(hass)
+            automatic_hosts = recovery_hosts(recovery_host, adapters)
+        except Exception:
+            _LOGGER.exception("Could not get local addresses for IP recovery")
+        else:
+            addresses.extend(automatic_hosts)
+            _LOGGER.debug(
+                "Added %d local unicast addresses for IP recovery",
+                len(automatic_hosts),
+            )
+
     return addresses
+
+
+def config_data_with_host(
+    data: Mapping[str, Any], device_mac: str, host: str
+) -> dict[str, Any]:
+    """Return config entry data with one local device host replaced."""
+    new_data = dict(data)
+    devices = dict(new_data[CONF_DEVICES])
+    device_config = dict(devices[device_mac])
+    connection = dict(device_config[CONF_DEVICE_CONNECTION])
+    local = dict(connection[CONF_DEVICE_CONNECTION_LOCAL])
+
+    local[CONF_HOST] = host
+    connection[CONF_DEVICE_CONNECTION_LOCAL] = local
+    device_config[CONF_DEVICE_CONNECTION] = connection
+    devices[device_mac] = device_config
+    new_data[CONF_DEVICES] = devices
+    return new_data
 
 
 async def try_find_new_ip(
@@ -165,7 +198,7 @@ async def try_find_new_ip(
     previous_ip = device.transport.ip_addr
 
     # Perform device discovery
-    discovery_addresses = await get_discovery_addresses(hass)
+    discovery_addresses = await get_discovery_addresses(hass, previous_ip)
     discovered_devices: list[GreeDiscoveredDevice] = await gree_discover_devices(
         cloud_api=None,
         broadcast_addresses=discovery_addresses,
@@ -205,10 +238,9 @@ async def try_find_new_ip(
 
     # Update config entry to save the new IP
     try:
-        new_data = config_entry.data
-        new_data[CONF_DEVICES][device.mac_address][CONF_DEVICE_CONNECTION][
-            CONF_DEVICE_CONNECTION_LOCAL
-        ][CONF_HOST] = device.transport.ip_addr
+        new_data = config_data_with_host(
+            config_entry.data, device.mac_address, device.transport.ip_addr
+        )
 
         if not hass.config_entries.async_update_entry(config_entry, data=new_data):
             _LOGGER.debug("Failed to save new IP in config entry data")

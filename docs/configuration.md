@@ -117,9 +117,15 @@ Open the device page and choose **Delete** from the three dot menu. The device i
 Two mechanisms keep the stored IP address current when a device gets a new one from DHCP:
 
 - Home Assistant reports DHCP leases of Gree devices to the integration. When the MAC matches a configured device, the stored IP is updated and the entry is reloaded. This only updates known devices. It does not start a setup flow for new ones.
-- When a poll fails, the integration runs a discovery, looks for the device MAC, and retries once with the new IP.
+- When setup, a poll or a command fails, the integration runs a discovery,
+  looks for the controller MAC, and retries once with the new IP. Along with
+  broadcasts and the configured discovery targets, it probes at most the local
+  `/24` around the old address. This also works with Wi-Fi modules that do not
+  answer broadcast scans.
 
-Both need the device to be on a network that Home Assistant can reach with a broadcast. Give the device a fixed IP when it is on another VLAN.
+The automatic subnet probe only runs when the old address belongs to an enabled
+Home Assistant network adapter. For a device on another VLAN, add the smallest
+useful range under **Extra Networks**, or give the device a fixed IP.
 
 ## Reauthentication
 

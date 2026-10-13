@@ -112,4 +112,13 @@ An entity is available when the last coordinator poll succeeded and the device c
 
 ## Recovery
 
-When a poll fails with `GreeConnectionError`, the coordinator runs `try_find_new_ip()`. That does a discovery broadcast, and if the device's MAC shows up with a new IP, the config entry is updated and the poll is retried once.
+When setup, a poll or a command fails with `GreeConnectionError`, the integration
+runs `try_find_new_ip()`. It searches with broadcasts, the user discovery
+targets, and a bounded unicast scan of the local subnet that held the previous
+IP. The automatic unicast scan never covers more than one `/24`. This handles
+Wi-Fi modules that do not answer a broadcast without sending packets to a
+large local network.
+
+If the controller MAC is found at a new IP, the config entry and the existing
+UDP transport are updated. Setup, the poll or the command is then retried once.
+The MAC is the stable identity. The IP is only the current route to it.

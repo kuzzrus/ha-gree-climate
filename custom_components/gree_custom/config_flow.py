@@ -101,6 +101,7 @@ from .const import (
 )
 from .coordinator import GreeConfigEntry
 from .helpers import (
+    config_data_with_host,
     create_discovered_from_config,
     get_config_entries,
     get_configured_macs_in_entries,
@@ -359,10 +360,9 @@ class SetupConfigFlow(ConfigFlow, domain=DOMAIN):
                 discover.remove(d)
 
                 # update data
-                new_data = dict(entry_match.data)
-                new_data[CONF_DEVICES][discovery_info.macaddress][
-                    CONF_DEVICE_CONNECTION
-                ][CONF_DEVICE_CONNECTION_LOCAL][CONF_HOST] = discovery_info.ip
+                new_data = config_data_with_host(
+                    entry_match.data, d.mac, d.host or discovery_info.ip
+                )
                 # TODO: Check if this only returns True if the IP Changed
                 if (
                     self.hass.config_entries.async_update_entry(
