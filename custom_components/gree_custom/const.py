@@ -1,6 +1,8 @@
 """Constants for the Gree integration."""
 
-from homeassistant.components.climate import HVACMode  # pyright: ignore[reportPrivateImportUsage]
+from homeassistant.components.climate import (
+    HVACMode,  # pyright: ignore[reportPrivateImportUsage]
+)
 from homeassistant.const import UnitOfTemperature
 
 from .aiogree.api import (
@@ -50,6 +52,13 @@ CONF_SWING_HORIZONTAL_MODES = "swing_horizontal_modes"
 CONF_FEATURES = "features"
 CONF_TEMPERATURE_STEP = "target_temp_step"
 CONF_PREFER_CLOUD = "prefer_cloud"
+CONF_EXTERNAL_THERMOSTAT = "external_thermostat"
+CONF_EXTERNAL_THERMOSTAT_SENSOR = "sensor"
+CONF_EXTERNAL_THERMOSTAT_HYSTERESIS = "hysteresis"
+CONF_HEAT_ACTIVE_TEMPERATURE = "heat_active_temperature"
+CONF_HEAT_IDLE_TEMPERATURE = "heat_idle_temperature"
+CONF_COOL_ACTIVE_TEMPERATURE = "cool_active_temperature"
+CONF_COOL_IDLE_TEMPERATURE = "cool_idle_temperature"
 
 DEFAULT_TARGET_TEMP_STEP = 1
 ENCRYPTION_VERSION_AUTO = "0"
@@ -60,6 +69,12 @@ DEFAULT_RESTORE_STATES = True
 MIN_SCAN_INTERVAL = 5
 DEFAULT_SCAN_INTERVAL = 60
 DEFAULT_PREFER_CLOUD = False
+DEFAULT_EXTERNAL_THERMOSTAT_HYSTERESIS = 0.5
+DEFAULT_EXTERNAL_THERMOSTAT_TARGET = 26.0
+DEFAULT_HEAT_ACTIVE_TEMPERATURE = 30.0
+DEFAULT_HEAT_IDLE_TEMPERATURE = 16.0
+DEFAULT_COOL_ACTIVE_TEMPERATURE = 16.0
+DEFAULT_COOL_IDLE_TEMPERATURE = 30.0
 
 DEFAULT_DEVICE_UID = 0
 DEFAULT_DEVICE_PORT = 7000

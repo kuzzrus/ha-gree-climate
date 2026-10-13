@@ -41,6 +41,8 @@ from .const import (
     ATTR_EXTERNAL_HUMIDITY_SENSOR,
     ATTR_EXTERNAL_TEMPERATURE_SENSOR,
     CONF_DEVICE_OPTIONS,
+    CONF_EXTERNAL_THERMOSTAT,
+    CONF_EXTERNAL_THERMOSTAT_SENSOR,
     CONF_FAN_MODES,
     CONF_HVAC_MODES,
     CONF_SWING_HORIZONTAL_MODES,
@@ -60,6 +62,7 @@ from .const import (
 )
 from .coordinator import GreeConfigEntry, GreeCoordinator
 from .entity import GreeEntity, GreeEntityDescription
+from .external_thermostat import GreeExternalThermostat
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -81,7 +84,7 @@ async def async_setup_entry(
 
     _LOGGER.debug("Setting up Climate Entities")
 
-    entities: list[GreeClimate] = []
+    entities: list[GreeClimate | GreeExternalThermostat] = []
 
     for coordinator in entry.runtime_data.values():
         options: dict[str, Any] = coordinator.device_config.get(CONF_DEVICE_OPTIONS, {})
@@ -154,6 +157,19 @@ async def async_setup_entry(
                 external_humidity_sensor_id=options.get(ATTR_EXTERNAL_HUMIDITY_SENSOR),
             )
         )
+
+        thermostat_config = options.get(CONF_EXTERNAL_THERMOSTAT, {})
+        thermostat_modes = [
+            mode for mode in (HVACMode.HEAT, HVACMode.COOL) if mode in hvac_modes
+        ]
+        if thermostat_config.get(CONF_EXTERNAL_THERMOSTAT_SENSOR) and thermostat_modes:
+            entities.append(
+                GreeExternalThermostat(
+                    coordinator,
+                    thermostat_config,
+                    [*thermostat_modes, HVACMode.OFF],
+                )
+            )
 
     async_add_entities(entities)
 

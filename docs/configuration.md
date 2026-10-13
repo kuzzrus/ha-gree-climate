@@ -98,6 +98,19 @@ One page per device. Gree devices do not report reliably which features they hav
 
 The external sensors only change what the climate entity shows. The unit keeps using its own sensor to regulate.
 
+The collapsed **External thermostat** section adds a second climate entity that does regulate from another sensor:
+
+| Field | Default | Meaning |
+|---|---|---|
+| Room temperature sensor | none | Creates the external thermostat. Clear the field to remove the entity. |
+| Hysteresis | 0.5 °C | Difference below and above the room target where the thermostat changes between active and idle. Range 0.1 to 5 °C. |
+| Heat active setpoint | 30 °C | Setpoint sent to the Gree unit when the room needs heat. |
+| Heat idle setpoint | 16 °C | Setpoint sent after the room is warm enough. It must be below the active heat setpoint. |
+| Cool active setpoint | 16 °C | Setpoint sent to the Gree unit when the room needs cooling. |
+| Cool idle setpoint | 30 °C | Setpoint sent after the room is cool enough. It must be above the active cool setpoint. |
+
+The external thermostat behavior is described in [Entities](entities.md#external-thermostat).
+
 ## Reconfigure
 
 Open the entry under **Settings** > **Devices & Services**, click the three dots and choose **Reconfigure**. The flow runs again with your current values filled in. Saving reloads the entry, so the change works right away without a restart.

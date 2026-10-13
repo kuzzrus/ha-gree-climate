@@ -8,6 +8,17 @@ Yandex also has a fixed list of mode names. Gree fan modes such as `medium_low` 
 
 Open **Settings > Developer tools > States** in Home Assistant and find the main Gree climate entity. Copy its entity ID. The example below uses `climate.your_ac`. Replace it with your ID.
 
+If you enabled the integration's external thermostat, it has its own climate entity. Expose that entity as a normal thermostat. Its target temperature is the room target and its current temperature comes from the selected external sensor:
+
+```yaml
+yandex_smart_home:
+  entity_config:
+    climate.your_ac_external_thermostat:
+      type: thermostat
+```
+
+Do not keep the old virtual thermostat based on a sensor and `input_number` after moving to this entity. It would give Yandex two controls for the same room target.
+
 ## Add the Yandex mapping
 
 Add this block to `configuration.yaml`. If `yandex_smart_home:` already exists, merge `entity_config` into the existing block. Do not add a second `yandex_smart_home:` key.

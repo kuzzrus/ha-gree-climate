@@ -11,7 +11,8 @@
             "cloud_bad_login": "Login failed. Ensure the details are correct and try again.",
             "cloud_unknown": "Error during login. Please check the logs and contact the developers",
             "no_devices_selected": "Please select at least one device to continue",
-            "no_methods_selected": "Please select at least one discovery method"
+            "no_methods_selected": "Please select at least one discovery method",
+            "invalid_external_thermostat": "Check the external thermostat settings. The active heat temperature must be above its idle temperature, and the active cool temperature must be below its idle temperature."
         },
         "abort": {
             "reconfigure_successful": "Devices reconfigured with success.",
@@ -119,6 +120,27 @@
                     "external_humidity_sensor": "If set will replace the built-in HVAC humidity sensor for the Climate entity data",
                     "restore_states": "If checked, when the integration is started the device will be overridden by previous states of the integration instead of using the current device state.",
                     "target_temp_step": "Sets the increment step for adjusting the target temperature. Fahrenheit degrees are clamped to the nearest integer."
+                },
+                "sections": {
+                    "external_thermostat": {
+                        "name": "External thermostat",
+                        "data": {
+                            "sensor": "Room temperature sensor",
+                            "hysteresis": "Hysteresis",
+                            "heat_active_temperature": "Heat active setpoint",
+                            "heat_idle_temperature": "Heat idle setpoint",
+                            "cool_active_temperature": "Cool active setpoint",
+                            "cool_idle_temperature": "Cool idle setpoint"
+                        },
+                        "data_description": {
+                            "sensor": "Creates the external thermostat entity. Leave empty to disable it.",
+                            "hysteresis": "Heat starts below the target by this value and idles above it by the same value. Cooling uses the opposite limits.",
+                            "heat_active_temperature": "Setpoint sent to the Gree unit when heating is needed.",
+                            "heat_idle_temperature": "Setpoint sent after the room is warm enough, so the unit stops heating without being powered off.",
+                            "cool_active_temperature": "Setpoint sent to the Gree unit when cooling is needed.",
+                            "cool_idle_temperature": "Setpoint sent after the room is cool enough, so the unit stops cooling without being powered off."
+                        }
+                    }
                 }
             },
             "reconfigure": {
@@ -233,6 +255,9 @@
             }
         },
         "climate": {
+            "external_thermostat": {
+                "name": "External thermostat"
+            },
             "hvac": {
                 "state_attributes": {
                     "fan_mode": {
