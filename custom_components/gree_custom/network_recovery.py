@@ -36,7 +36,7 @@ def recovery_hosts(
                     f"{ip_info['address']}/{ip_info['network_prefix']}",
                     strict=False,
                 )
-            except (KeyError, TypeError, ValueError):
+            except KeyError, TypeError, ValueError:
                 continue
 
             if target not in adapter_network:
@@ -44,8 +44,6 @@ def recovery_hosts(
 
             prefix = max(adapter_network.prefixlen, AUTO_RECOVERY_PREFIX)
             recovery_network = ip_network(f"{target}/{prefix}", strict=False)
-            return [
-                str(host) for host in recovery_network.hosts() if host != target
-            ]
+            return [str(host) for host in recovery_network.hosts() if host != target]
 
     return []

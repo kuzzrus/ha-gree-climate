@@ -238,15 +238,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: GreeConfigEntry) -> bool
             except MqttConnectError as retry_err:
                 raise ConfigEntryAuthFailed("bad_credentials") from retry_err
             except GreeConnectionError:
-                _LOGGER.exception(
-                    "Error setting up device %s after IP recovery", mac
-                )
+                _LOGGER.exception("Error setting up device %s after IP recovery", mac)
                 create_device_connection_issue(hass, entry.entry_id, mac, name)
                 continue
             except Exception as retry_err:
-                _LOGGER.exception(
-                    "Error setting up device %s after IP recovery", mac
-                )
+                _LOGGER.exception("Error setting up device %s after IP recovery", mac)
                 create_device_connection_issue(hass, entry.entry_id, mac, name)
                 raise ConfigEntryNotReady from retry_err
         except Exception as err:
