@@ -1,6 +1,8 @@
 """Constants for the Gree integration."""
 
-from homeassistant.components.climate import HVACMode  # pyright: ignore[reportPrivateImportUsage]
+from homeassistant.components.climate import (  # noqa: I001, RUF100
+    HVACMode,  # pyright: ignore[reportPrivateImportUsage]
+)
 from homeassistant.const import UnitOfTemperature
 
 from .aiogree.api import (
@@ -68,6 +70,8 @@ MIN_SCAN_INTERVAL = 5
 DEFAULT_SCAN_INTERVAL = 60
 DEFAULT_PREFER_CLOUD = False
 DEFAULT_EXTERNAL_THERMOSTAT_HYSTERESIS = 0.5
+MIN_THERMOSTAT_HYSTERESIS = 0.1
+MAX_THERMOSTAT_HYSTERESIS = 5.0
 DEFAULT_EXTERNAL_THERMOSTAT_TARGET = 26.0
 DEFAULT_HEAT_ACTIVE_TEMPERATURE = 30.0
 DEFAULT_HEAT_IDLE_TEMPERATURE = 16.0

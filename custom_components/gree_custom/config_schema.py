@@ -110,7 +110,9 @@ from .const import (
     ENCRYPTION_VERSION_AUTO,
     GATTR_FEAT_QUIET_MODE,
     GATTR_FEAT_TURBO,
+    MAX_THERMOSTAT_HYSTERESIS,
     MIN_SCAN_INTERVAL,
+    MIN_THERMOSTAT_HYSTERESIS,
 )
 from .helpers import get_entity_ids_from_unique_ids
 
@@ -127,8 +129,6 @@ VALID_FEATURES = list(ATTR_FEATURES_TO_PROP_MAP)
 
 MIN_TARGET_TEMP_STEP = 0.5
 MAX_TARGET_TEMP_STEP = 5
-MIN_THERMOSTAT_HYSTERESIS = 0.1
-MAX_THERMOSTAT_HYSTERESIS = 5.0
 
 
 def _clean_mac(value: Any, field: str) -> str:

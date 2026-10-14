@@ -31,6 +31,8 @@ from .aiogree.const import MAX_TEMP_C, MIN_TEMP_C
 from .const import (
     CONF_COOL_ACTIVE_TEMPERATURE,
     CONF_COOL_IDLE_TEMPERATURE,
+    CONF_DEVICE_OPTIONS,
+    CONF_EXTERNAL_THERMOSTAT,
     CONF_EXTERNAL_THERMOSTAT_HYSTERESIS,
     CONF_EXTERNAL_THERMOSTAT_SENSOR,
     CONF_HEAT_ACTIVE_TEMPERATURE,
@@ -95,25 +97,6 @@ class GreeExternalThermostat(  # pyright: ignore[reportIncompatibleVariableOverr
         )
 
         self._sensor_entity_id: str = config[CONF_EXTERNAL_THERMOSTAT_SENSOR]
-        self._hysteresis = float(
-            config.get(
-                CONF_EXTERNAL_THERMOSTAT_HYSTERESIS,
-                DEFAULT_EXTERNAL_THERMOSTAT_HYSTERESIS,
-            )
-        )
-        self._heat_active_temperature = float(
-            config.get(CONF_HEAT_ACTIVE_TEMPERATURE, DEFAULT_HEAT_ACTIVE_TEMPERATURE)
-        )
-        self._heat_idle_temperature = float(
-            config.get(CONF_HEAT_IDLE_TEMPERATURE, DEFAULT_HEAT_IDLE_TEMPERATURE)
-        )
-        self._cool_active_temperature = float(
-            config.get(CONF_COOL_ACTIVE_TEMPERATURE, DEFAULT_COOL_ACTIVE_TEMPERATURE)
-        )
-        self._cool_idle_temperature = float(
-            config.get(CONF_COOL_IDLE_TEMPERATURE, DEFAULT_COOL_IDLE_TEMPERATURE)
-        )
-
         self._attr_hvac_modes = hvac_modes
         self._attr_hvac_mode = HVACMode.OFF
         self._last_hvac_mode = next(
@@ -272,8 +255,26 @@ class GreeExternalThermostat(  # pyright: ignore[reportIncompatibleVariableOverr
     def _control_setpoints(self) -> tuple[float, float]:
         """Return active and idle device setpoints for the selected mode."""
         if self._attr_hvac_mode == HVACMode.HEAT:
-            return self._heat_active_temperature, self._heat_idle_temperature
-        return self._cool_active_temperature, self._cool_idle_temperature
+            return (
+                self._setting(
+                    CONF_HEAT_ACTIVE_TEMPERATURE, DEFAULT_HEAT_ACTIVE_TEMPERATURE
+                ),
+                self._setting(
+                    CONF_HEAT_IDLE_TEMPERATURE, DEFAULT_HEAT_IDLE_TEMPERATURE
+                ),
+            )
+        return (
+            self._setting(
+                CONF_COOL_ACTIVE_TEMPERATURE, DEFAULT_COOL_ACTIVE_TEMPERATURE
+            ),
+            self._setting(CONF_COOL_IDLE_TEMPERATURE, DEFAULT_COOL_IDLE_TEMPERATURE),
+        )
+
+    def _setting(self, key: str, default: float) -> float:
+        """Return the current external thermostat setting."""
+        options = self.coordinator.device_config.get(CONF_DEVICE_OPTIONS, {})
+        config = options.get(CONF_EXTERNAL_THERMOSTAT, {})
+        return float(config.get(key, default))
 
     def _update_hvac_action(self) -> None:
         """Update the action shown by Home Assistant."""
@@ -302,7 +303,10 @@ class GreeExternalThermostat(  # pyright: ignore[reportIncompatibleVariableOverr
                 mode,
                 self._attr_current_temperature,
                 self._attr_target_temperature,
-                self._hysteresis,
+                self._setting(
+                    CONF_EXTERNAL_THERMOSTAT_HYSTERESIS,
+                    DEFAULT_EXTERNAL_THERMOSTAT_HYSTERESIS,
+                ),
                 self._running,
             )
             self._update_hvac_action()
