@@ -308,6 +308,21 @@
             },
             "humidity_control_target": {
                 "name": "Целевая влажность"
+            },
+            "external_thermostat_hysteresis": {
+                "name": "Гистерезис термостата"
+            },
+            "external_thermostat_heat_active_temperature": {
+                "name": "Температура активного обогрева"
+            },
+            "external_thermostat_heat_idle_temperature": {
+                "name": "Температура ожидания обогрева"
+            },
+            "external_thermostat_cool_active_temperature": {
+                "name": "Температура активного охлаждения"
+            },
+            "external_thermostat_cool_idle_temperature": {
+                "name": "Температура ожидания охлаждения"
             }
         },
         "select": {
@@ -369,6 +384,9 @@
         },
         "entity_unavailable": {
             "message": "Сущность недоступна."
+        },
+        "invalid_thermostat_setting": {
+            "message": "Значение выходит за допустимый диапазон или не соответствует требуемому шагу."
         },
         "generic": {
             "message": "Не удалось выполнить запрошенное изменение. Проверьте журнал интеграции."

@@ -56,6 +56,21 @@
     "number": {
       "humidity_control_target": {
         "default": "mdi:water-percent"
+      },
+      "external_thermostat_hysteresis": {
+        "default": "mdi:swap-vertical"
+      },
+      "external_thermostat_heat_active_temperature": {
+        "default": "mdi:thermometer-chevron-up"
+      },
+      "external_thermostat_heat_idle_temperature": {
+        "default": "mdi:thermometer-low"
+      },
+      "external_thermostat_cool_active_temperature": {
+        "default": "mdi:thermometer-chevron-down"
+      },
+      "external_thermostat_cool_idle_temperature": {
+        "default": "mdi:thermometer-high"
       }
     },
     "switch": {

@@ -308,6 +308,21 @@
             },
             "humidity_control_target": {
                 "name": "Humidity Control Target"
+            },
+            "external_thermostat_hysteresis": {
+                "name": "Thermostat hysteresis"
+            },
+            "external_thermostat_heat_active_temperature": {
+                "name": "Heat active setpoint"
+            },
+            "external_thermostat_heat_idle_temperature": {
+                "name": "Heat idle setpoint"
+            },
+            "external_thermostat_cool_active_temperature": {
+                "name": "Cool active setpoint"
+            },
+            "external_thermostat_cool_idle_temperature": {
+                "name": "Cool idle setpoint"
             }
         },
         "select": {
@@ -369,6 +384,9 @@
         },
         "entity_unavailable": {
             "message": "The entity is unavailable."
+        },
+        "invalid_thermostat_setting": {
+            "message": "The value is outside the allowed range or does not match the required step."
         },
         "generic": {
             "message": "There was a problem performing the requested change, please consult the integration log."

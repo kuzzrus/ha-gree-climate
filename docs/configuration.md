@@ -109,6 +109,8 @@ The collapsed **External thermostat** section adds a second climate entity that 
 | Cool active setpoint | 16 °C | Setpoint sent to the Gree unit when the room needs cooling. |
 | Cool idle setpoint | 30 °C | Setpoint sent after the room is cool enough. It must be above the active cool setpoint. |
 
+After the external thermostat is created, its hysteresis and four setpoints also appear as configuration number entities on the device page. Changes there are saved and applied at once. Reconfigure is only needed to change the room sensor or to add or remove the external thermostat.
+
 The external thermostat behavior is described in [Entities](entities.md#external-thermostat).
 
 ## Reconfigure
