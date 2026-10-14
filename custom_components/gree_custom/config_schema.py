@@ -49,6 +49,7 @@ from homeassistant.helpers.selector import (
 from .aiogree.api import GreeDiscoveredDevice, GreeProp
 from .aiogree.cipher import EncryptionVersion
 from .aiogree.cloud_api import GreeRegion
+from .aiogree.const import MAX_TEMP_C, MIN_TEMP_C
 from .aiogree.device import GreeDevice
 from .aiogree.helpers import gree_extract_macs
 from .const import (
@@ -56,6 +57,8 @@ from .const import (
     ATTR_EXTERNAL_TEMPERATURE_SENSOR,
     ATTR_FEATURES_TO_PROP_MAP,
     CONF_CLOUD,
+    CONF_COOL_ACTIVE_TEMPERATURE,
+    CONF_COOL_IDLE_TEMPERATURE,
     CONF_DEVICE_CONNECTION,
     CONF_DEVICE_CONNECTION_CLOUD,
     CONF_DEVICE_CONNECTION_LOCAL,
@@ -64,10 +67,15 @@ from .const import (
     CONF_DISABLE_AVAILABLE_CHECK,
     CONF_ENCRYPTION_KEY,
     CONF_ENCRYPTION_VERSION,
+    CONF_EXTERNAL_THERMOSTAT,
+    CONF_EXTERNAL_THERMOSTAT_HYSTERESIS,
+    CONF_EXTERNAL_THERMOSTAT_SENSOR,
     CONF_EXTRA_SCAN_HOSTS,
     CONF_EXTRA_SCAN_NETWORKS,
     CONF_FAN_MODES,
     CONF_FEATURES,
+    CONF_HEAT_ACTIVE_TEMPERATURE,
+    CONF_HEAT_IDLE_TEMPERATURE,
     CONF_HVAC_MODES,
     CONF_MAC_CONTROLLER_CLOUD,
     CONF_MAC_CONTROLLER_LOCAL,
@@ -80,12 +88,17 @@ from .const import (
     CONF_UID,
     DEFAULT_CONNECTION_MAX_ATTEMPTS,
     DEFAULT_CONNECTION_TIMEOUT,
+    DEFAULT_COOL_ACTIVE_TEMPERATURE,
+    DEFAULT_COOL_IDLE_TEMPERATURE,
     DEFAULT_DEVICE_PORT,
     DEFAULT_DEVICE_UID,
     DEFAULT_DISABLE_AVAILABLE_CHECK,
     DEFAULT_ENCRYPTION_KEY,
     DEFAULT_ENCRYPTION_VERSION,
+    DEFAULT_EXTERNAL_THERMOSTAT_HYSTERESIS,
     DEFAULT_FAN_MODES,
+    DEFAULT_HEAT_ACTIVE_TEMPERATURE,
+    DEFAULT_HEAT_IDLE_TEMPERATURE,
     DEFAULT_HVAC_MODES,
     DEFAULT_PREFER_CLOUD,
     DEFAULT_RESTORE_STATES,
@@ -114,6 +127,8 @@ VALID_FEATURES = list(ATTR_FEATURES_TO_PROP_MAP)
 
 MIN_TARGET_TEMP_STEP = 0.5
 MAX_TARGET_TEMP_STEP = 5
+MIN_THERMOSTAT_HYSTERESIS = 0.1
+MAX_THERMOSTAT_HYSTERESIS = 5.0
 
 
 def _clean_mac(value: Any, field: str) -> str:
@@ -168,6 +183,72 @@ def _target_temp_step(value: Any) -> float:
         )
 
     return step
+
+
+def _thermostat_hysteresis(value: Any) -> float:
+    """Validate the external thermostat hysteresis."""
+    hysteresis = probatio.Coerce(float)(value)
+    if not MIN_THERMOSTAT_HYSTERESIS <= hysteresis <= MAX_THERMOSTAT_HYSTERESIS:
+        raise probatio.Invalid(
+            f"{CONF_EXTERNAL_THERMOSTAT_HYSTERESIS} must be between "
+            f"{MIN_THERMOSTAT_HYSTERESIS} and {MAX_THERMOSTAT_HYSTERESIS}"
+        )
+    return hysteresis
+
+
+def _thermostat_control_temperature(value: Any) -> float:
+    """Validate a Gree control temperature in Celsius."""
+    temperature = probatio.Coerce(float)(value)
+    if not MIN_TEMP_C <= temperature <= MAX_TEMP_C:
+        raise probatio.Invalid(
+            f"control temperature must be between {MIN_TEMP_C} and {MAX_TEMP_C}"
+        )
+    if temperature * 2 != int(temperature * 2):
+        raise probatio.Invalid("control temperature must be a multiple of 0.5")
+    return temperature
+
+
+def _validate_external_thermostat(value: dict[str, Any]) -> dict[str, Any]:
+    """Check that active and idle control temperatures have useful order."""
+    if value[CONF_HEAT_ACTIVE_TEMPERATURE] <= value[CONF_HEAT_IDLE_TEMPERATURE]:
+        raise probatio.Invalid(
+            f"{CONF_HEAT_ACTIVE_TEMPERATURE} must be above {CONF_HEAT_IDLE_TEMPERATURE}"
+        )
+    if value[CONF_COOL_ACTIVE_TEMPERATURE] >= value[CONF_COOL_IDLE_TEMPERATURE]:
+        raise probatio.Invalid(
+            f"{CONF_COOL_ACTIVE_TEMPERATURE} must be below {CONF_COOL_IDLE_TEMPERATURE}"
+        )
+    return value
+
+
+EXTERNAL_THERMOSTAT_SCHEMA = probatio.All(
+    probatio.Schema(
+        {
+            probatio.Optional(CONF_EXTERNAL_THERMOSTAT_SENSOR): cv.entity_id,
+            probatio.Optional(
+                CONF_EXTERNAL_THERMOSTAT_HYSTERESIS,
+                default=DEFAULT_EXTERNAL_THERMOSTAT_HYSTERESIS,
+            ): _thermostat_hysteresis,
+            probatio.Optional(
+                CONF_HEAT_ACTIVE_TEMPERATURE,
+                default=DEFAULT_HEAT_ACTIVE_TEMPERATURE,
+            ): _thermostat_control_temperature,
+            probatio.Optional(
+                CONF_HEAT_IDLE_TEMPERATURE,
+                default=DEFAULT_HEAT_IDLE_TEMPERATURE,
+            ): _thermostat_control_temperature,
+            probatio.Optional(
+                CONF_COOL_ACTIVE_TEMPERATURE,
+                default=DEFAULT_COOL_ACTIVE_TEMPERATURE,
+            ): _thermostat_control_temperature,
+            probatio.Optional(
+                CONF_COOL_IDLE_TEMPERATURE,
+                default=DEFAULT_COOL_IDLE_TEMPERATURE,
+            ): _thermostat_control_temperature,
+        }
+    ),
+    _validate_external_thermostat,
+)
 
 
 CLOUD_SCHEMA = probatio.Schema(
@@ -242,6 +323,7 @@ OPTIONS_SCHEMA = probatio.Schema(
         probatio.Optional(CONF_TEMPERATURE_STEP): _target_temp_step,
         probatio.Optional(ATTR_EXTERNAL_TEMPERATURE_SENSOR): cv.entity_id,
         probatio.Optional(ATTR_EXTERNAL_HUMIDITY_SENSOR): cv.entity_id,
+        probatio.Optional(CONF_EXTERNAL_THERMOSTAT): EXTERNAL_THERMOSTAT_SCHEMA,
         probatio.Optional(
             CONF_RESTORE_STATES, default=DEFAULT_RESTORE_STATES
         ): cv.boolean,
@@ -723,6 +805,91 @@ def setup_device_options_schema(  # noqa: C901
                         mode=NumberSelectorMode.BOX,
                         unit_of_measurement="ºC",
                     )
+                )
+            }
+        )
+
+    if device.supports_property(GreeProp.OP_MODE) and device.supports_property(
+        GreeProp.TARGET_TEMPERATURE
+    ):
+        thermostat_defaults = defaults.get(CONF_EXTERNAL_THERMOSTAT, {})
+        schema.update(
+            {
+                probatio.Required(CONF_EXTERNAL_THERMOSTAT): section(
+                    probatio.Schema(
+                        {
+                            probatio.Optional(
+                                CONF_EXTERNAL_THERMOSTAT_SENSOR,
+                                description={
+                                    "suggested_value": thermostat_defaults.get(
+                                        CONF_EXTERNAL_THERMOSTAT_SENSOR, ""
+                                    )
+                                },
+                            ): EntitySelector(
+                                config=EntitySelectorConfig(
+                                    domain=SENSOR_DOMAIN,
+                                    device_class=SensorDeviceClass.TEMPERATURE,
+                                    multiple=False,
+                                    exclude_entities=get_entity_ids_from_unique_ids(
+                                        hass,
+                                        SENSOR_DOMAIN,
+                                        [
+                                            f"{device.mac_address}_indoor_temperature",
+                                            f"{device.mac_address}_outdoor_temperature",
+                                        ],
+                                    ),
+                                )
+                            ),
+                            probatio.Required(
+                                CONF_EXTERNAL_THERMOSTAT_HYSTERESIS,
+                                default=thermostat_defaults.get(
+                                    CONF_EXTERNAL_THERMOSTAT_HYSTERESIS,
+                                    DEFAULT_EXTERNAL_THERMOSTAT_HYSTERESIS,
+                                ),
+                            ): NumberSelector(
+                                NumberSelectorConfig(
+                                    min=MIN_THERMOSTAT_HYSTERESIS,
+                                    max=MAX_THERMOSTAT_HYSTERESIS,
+                                    step=0.1,
+                                    mode=NumberSelectorMode.BOX,
+                                    unit_of_measurement="°C",
+                                )
+                            ),
+                            **{
+                                probatio.Required(
+                                    field,
+                                    default=thermostat_defaults.get(field, default),
+                                ): NumberSelector(
+                                    NumberSelectorConfig(
+                                        min=MIN_TEMP_C,
+                                        max=MAX_TEMP_C,
+                                        step=0.5,
+                                        mode=NumberSelectorMode.BOX,
+                                        unit_of_measurement="°C",
+                                    )
+                                )
+                                for field, default in (
+                                    (
+                                        CONF_HEAT_ACTIVE_TEMPERATURE,
+                                        DEFAULT_HEAT_ACTIVE_TEMPERATURE,
+                                    ),
+                                    (
+                                        CONF_HEAT_IDLE_TEMPERATURE,
+                                        DEFAULT_HEAT_IDLE_TEMPERATURE,
+                                    ),
+                                    (
+                                        CONF_COOL_ACTIVE_TEMPERATURE,
+                                        DEFAULT_COOL_ACTIVE_TEMPERATURE,
+                                    ),
+                                    (
+                                        CONF_COOL_IDLE_TEMPERATURE,
+                                        DEFAULT_COOL_IDLE_TEMPERATURE,
+                                    ),
+                                )
+                            },
+                        }
+                    ),
+                    {"collapsed": True},
                 )
             }
         )

@@ -52,6 +52,7 @@ For a cloud entry, `cloud` holds the account email, region, user id and token. T
 | `connection.uid` | User id sent in every pack. 0 for local. |
 | `options.name` | Device name in Home Assistant. Defaults to the name the unit reports, which is usually the tail of its MAC. |
 | `options.features` | Which optional switches to create. Only features the unit reported as supported are offered. |
+| `options.external_thermostat` | Optional external sensor thermostat settings. The entity is created when this block has a `sensor`. |
 | `options.restore_states` | Restore the last known entity states after a restart. |
 
 ## YAML import

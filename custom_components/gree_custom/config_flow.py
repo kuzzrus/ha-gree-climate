@@ -57,6 +57,7 @@ from .aiogree.errors import (
 from .aiogree.transport_mqtt import GreeMqttTransport
 from .aiogree.transport_udp import GreeUdpTransport
 from .config_schema import (
+    EXTERNAL_THERMOSTAT_SCHEMA,
     SETUP_SCHEMA,
     setup_cloud_schema,
     setup_device_connection_options_schema,
@@ -77,6 +78,7 @@ from .const import (
     CONF_DISCOVERY_PREFS_VERSION,
     CONF_ENCRYPTION_KEY,
     CONF_ENCRYPTION_VERSION,
+    CONF_EXTERNAL_THERMOSTAT,
     CONF_EXTRA_SCAN_HOSTS,
     CONF_EXTRA_SCAN_NETWORKS,
     CONF_FAN_MODES,
@@ -892,7 +894,7 @@ class SetupConfigFlow(ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
-    async def async_step_device_options(
+    async def async_step_device_options(  # noqa: C901
         self, user_input: dict | None = None
     ) -> ConfigFlowResult:
         """Iterate through the selected devices to configure their options."""
@@ -901,6 +903,30 @@ class SetupConfigFlow(ConfigFlow, domain=DOMAIN):
         device = self._devices[d.mac]
 
         if user_input is not None:
+            if thermostat := user_input.get(CONF_EXTERNAL_THERMOSTAT):
+                try:
+                    user_input[CONF_EXTERNAL_THERMOSTAT] = EXTERNAL_THERMOSTAT_SCHEMA(
+                        thermostat
+                    )
+                except probatio.Invalid:
+                    errors["base"] = "invalid_external_thermostat"
+
+            if errors:
+                return self.async_show_form(
+                    step_id="device_options",
+                    data_schema=setup_device_options_schema(
+                        hass=self.hass,
+                        device=device,
+                        default_values=user_input,
+                    ),
+                    description_placeholders={
+                        "device_idx": str(self._current_setup_device_index + 1),
+                        "device_cnt": str(len(self._selected_devices)),
+                        "device_name": str(d.friendly_name),
+                    },
+                    errors=errors,
+                )
+
             self._config_data[CONF_ALL_DEVICE_OPTIONS][d.mac] = user_input
             self._options_by_controller[device.mac_address_controller] = user_input
 

@@ -116,4 +116,11 @@ gree_custom:
                   target_temp_step: 1 # Number of degrees increase or decrease when changing the temperature | 0.5 <= number <= 5, 0.5 increments | default = 1
                   external_temperature_sensor: "sensor.living_room_temperature" # Sets a given temperature sensor as the sensor for the AC | str (Entity ID) | omit the key to not use one
                   external_humidity_sensor: "sensor.living_room_humidity" # Sets a given humidity sensor as the sensor for the AC | str (Entity ID) | omit the key to not use one
+                  external_thermostat: # Creates a second climate entity controlled by a room sensor | optional
+                      sensor: "sensor.living_room_temperature" # Temperature sensor used for control | entity ID | omit to disable the external thermostat
+                      hysteresis: 0.5 # Dead band on both sides of the room target | 0.1 to 5 °C | default = 0.5
+                      heat_active_temperature: 30 # Gree setpoint while heating is needed | 16 to 30 °C | default = 30
+                      heat_idle_temperature: 16 # Gree setpoint after the heat target is reached | 16 to 30 °C and below heat_active_temperature | default = 16
+                      cool_active_temperature: 16 # Gree setpoint while cooling is needed | 16 to 30 °C | default = 16
+                      cool_idle_temperature: 30 # Gree setpoint after the cool target is reached | 16 to 30 °C and above cool_active_temperature | default = 30
                   restore_states: true # Wether to restore the last HA state to device when HA starts | bool | default = true

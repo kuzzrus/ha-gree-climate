@@ -1,6 +1,6 @@
 # Entities
 
-Every device gets one climate entity and a set of sensors, switches, selects and numbers. Which ones you get depends on three things:
+Every device gets one main climate entity and a set of sensors, switches, selects and numbers. It can also get an external thermostat climate entity. Which ones you get depends on three things:
 
 1. **What the unit answers.** At setup, the integration asks the device for every property it knows. A property the device does not return is dropped. An entity is only created when the device answers the properties behind it. A unit with few features gets few entities.
 2. **What you enabled.** The **Device Features and Modes** option decides which optional switches and selects are created. See [configuration.md](configuration.md#device-features).
@@ -38,6 +38,22 @@ Turbo and Quiet are not fan speeds on the unit but separate features. The integr
 ### Temperature scale
 
 The unit has its own temperature scale, Celsius or Fahrenheit, which you change with the **Temperature Units** select. The climate entity follows the unit, and Home Assistant converts to your display units. Fahrenheit values come from the unit's own lookup table, not from a formula.
+
+## External thermostat
+
+The optional **External thermostat** climate entity uses a Home Assistant temperature sensor to regulate the room. It is separate from the main climate entity. Its target temperature is the room target, so it can be used directly as a thermostat in Home Assistant or Yandex Smart Home.
+
+The entity supports Heat, Cool and Off when those modes are enabled for the main climate entity. It uses one dead band around the target:
+
+- In Heat mode it becomes active at `target - hysteresis` and becomes idle at `target + hysteresis`.
+- In Cool mode it becomes active at `target + hysteresis` and becomes idle at `target - hysteresis`.
+- Inside the dead band it keeps its previous active or idle state.
+
+The thermostat keeps the Gree unit powered on while it regulates. It sends an active setpoint when heating or cooling is needed and an idle setpoint after the target is reached. The defaults match the former automation example: 30 and 16 °C for Heat, and 16 and 30 °C for Cool. All four setpoints and the hysteresis are device options.
+
+Turning this entity off turns the Gree unit off. Direct changes made through the main climate entity can be replaced by the thermostat on the next sensor or device update. Turn the external thermostat off before using the main entity for direct control.
+
+The entity becomes unavailable when the selected sensor has no numeric value or when the Gree device is unavailable. It keeps its last command and waits for valid data. Its target temperature and mode are restored after a Home Assistant restart.
 
 ## Sensors
 
