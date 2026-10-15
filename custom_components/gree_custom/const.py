@@ -20,7 +20,7 @@ DOMAIN = "gree_custom"
 VRF_CONTROLLER_ID_PREFIX = "controller_"
 VRF_CONTROLLER_TRANSLATION_KEY = "vrf_controller"
 
-CURRENT_CONF_VERSION = 3
+CURRENT_CONF_VERSION = 4
 
 CONFENTRY_ID_LOCAL_ONLY = "local_only"
 CONF_EXTRA_SCAN_NETWORKS = "extra_scan_networks"
@@ -54,7 +54,10 @@ CONF_TEMPERATURE_STEP = "target_temp_step"
 CONF_PREFER_CLOUD = "prefer_cloud"
 CONF_EXTERNAL_THERMOSTAT = "external_thermostat"
 CONF_EXTERNAL_THERMOSTAT_SENSOR = "sensor"
+# Kept for config entry migration and old YAML configurations.
 CONF_EXTERNAL_THERMOSTAT_HYSTERESIS = "hysteresis"
+CONF_EXTERNAL_THERMOSTAT_ACTIVATION_HYSTERESIS = "activation_hysteresis"
+CONF_EXTERNAL_THERMOSTAT_DEACTIVATION_HYSTERESIS = "deactivation_hysteresis"
 CONF_HEAT_ACTIVE_TEMPERATURE = "heat_active_temperature"
 CONF_HEAT_IDLE_TEMPERATURE = "heat_idle_temperature"
 CONF_COOL_ACTIVE_TEMPERATURE = "cool_active_temperature"

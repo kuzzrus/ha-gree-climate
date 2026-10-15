@@ -2,7 +2,7 @@
 
 One config entry is a hub. There is one entry per Gree Cloud account, plus one entry for all local-only devices. The local-only entry has `unique_id` `local_only`.
 
-The entry version is `CURRENT_CONF_VERSION` in `const.py` (3 at the time of writing).
+The entry version is `CURRENT_CONF_VERSION` in `const.py` (4 at the time of writing).
 
 ## Shape
 
@@ -28,7 +28,20 @@ Example, shortened:
         "encryption_key": "<redacted>",
         "uid": 0
       },
-      "options": { "name": "<name>", "features": ["beeper"], "restore_states": true }
+      "options": {
+        "name": "<name>",
+        "features": ["beeper"],
+        "external_thermostat": {
+          "sensor": "sensor.room_temperature",
+          "activation_hysteresis": 0.5,
+          "deactivation_hysteresis": 0.5,
+          "heat_active_temperature": 30,
+          "heat_idle_temperature": 16,
+          "cool_active_temperature": 16,
+          "cool_idle_temperature": 30
+        },
+        "restore_states": true
+      }
     }
   }
 }
@@ -53,6 +66,8 @@ For a cloud entry, `cloud` holds the account email, region, user id and token. T
 | `options.name` | Device name in Home Assistant. Defaults to the name the unit reports, which is usually the tail of its MAC. |
 | `options.features` | Which optional switches to create. Only features the unit reported as supported are offered. |
 | `options.external_thermostat` | Optional external sensor thermostat settings. The entity is created when this block has a `sensor`. |
+| `options.external_thermostat.activation_hysteresis` | Offset from the room target that starts heating or cooling. |
+| `options.external_thermostat.deactivation_hysteresis` | Offset from the room target that returns heating or cooling to idle. |
 | `options.restore_states` | Restore the last known entity states after a restart. |
 
 ## YAML import
@@ -70,6 +85,10 @@ The YAML wins at every start, so values that change after the import are not pre
 - `connection.local.host` updated by discovery goes back to the `host` in the YAML at the next start. Keep the YAML current, or give the unit a fixed IP.
 - The import does not bind the device, so it stores the `encryption_key` and `encryption_version` as written. With a blank key and version `"0"`, entry setup fetches the key and detects the version on every start. That is the normal path.
 - Changes made in the UI to a YAML managed entry are replaced by the YAML values at the next start.
+
+## Migration from config entry version 3
+
+Version 3 stored one `hysteresis` value. `async_migrate_entry` copies it to `activation_hysteresis` and `deactivation_hysteresis`, then removes the old key. This keeps the old control behavior until the user changes either value.
 
 ## Migration from 4.x
 
@@ -172,7 +191,7 @@ What to expect:
 If you change this shape:
 
 1. Bump `CURRENT_CONF_VERSION` in `const.py`.
-2. Add `async_migrate_entry` in `__init__.py`. There is no migration code yet, and Home Assistant refuses to load an entry whose version is older than the flow's version unless that function exists.
+2. Extend `async_migrate_entry` in `__init__.py`. Home Assistant refuses to load an entry whose version is older than the flow's version unless that function handles it.
 3. Update the example above and `manual-configuration.yaml`.
 
 ## Discovery preferences

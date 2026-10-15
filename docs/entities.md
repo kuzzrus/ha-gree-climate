@@ -43,15 +43,15 @@ The unit has its own temperature scale, Celsius or Fahrenheit, which you change 
 
 The optional **External thermostat** climate entity uses a Home Assistant temperature sensor to regulate the room. It is separate from the main climate entity. Its target temperature is the room target, so it can be used directly as a thermostat in Home Assistant or Yandex Smart Home.
 
-The entity supports Heat, Cool and Off when those modes are enabled for the main climate entity. It uses one dead band around the target:
+The entity supports Heat, Cool and Off when those modes are enabled for the main climate entity. It uses separate activation and deactivation offsets around the target:
 
-- In Heat mode it becomes active at `target - hysteresis` and becomes idle at `target + hysteresis`.
-- In Cool mode it becomes active at `target + hysteresis` and becomes idle at `target - hysteresis`.
-- Inside the dead band it keeps its previous active or idle state.
+- In Heat mode it becomes active at `target - activation hysteresis` and becomes idle at `target + deactivation hysteresis`.
+- In Cool mode it becomes active at `target + activation hysteresis` and becomes idle at `target - deactivation hysteresis`.
+- Between the activation and deactivation limits it keeps its previous active or idle state.
 
 The thermostat keeps the Gree unit powered on while it regulates. It sends an active setpoint when heating or cooling is needed and an idle setpoint after the target is reached. The defaults match the former automation example: 30 and 16 °C for Heat, and 16 and 30 °C for Cool.
 
-The device page has five configuration number entities for the hysteresis and the four setpoints. A change is saved and used at once. Active and idle setpoints cannot cross. The same values are also available in the reconfigure flow.
+The device page has six configuration number entities for the two hysteresis offsets and the four setpoints. A change is saved and used at once. Active and idle setpoints cannot cross. The same values are also available in the reconfigure flow.
 
 Turning this entity off turns the Gree unit off. Direct changes made through the main climate entity can be replaced by the thermostat on the next sensor or device update. Turn the external thermostat off before using the main entity for direct control.
 
@@ -111,7 +111,8 @@ Two switches are integration features. They do not exist on the unit and their s
 | Number | Feature | Available in | Range |
 |---|---|---|---|
 | Humidity Control Target | Humidity Control | Cool or Dry, with Humidity Control on Normal Dry | 40 to 80 % in Cool, 30 to 70 % in Dry, steps of 5. |
-| Thermostat hysteresis | External thermostat | Always | 0.1 to 5 °C, steps of 0.1. |
+| Activation hysteresis | External thermostat | Always | 0.1 to 5 °C, steps of 0.1. Starts heating below the target or cooling above it. |
+| Deactivation hysteresis | External thermostat | Always | 0.1 to 5 °C, steps of 0.1. Returns heating to idle above the target or cooling to idle below it. |
 | Heat active and idle setpoints | External thermostat | Always | 16 to 30 °C, steps of 0.5. Active must stay above idle. |
 | Cool active and idle setpoints | External thermostat | Always | 16 to 30 °C, steps of 0.5. Active must stay below idle. |
 
