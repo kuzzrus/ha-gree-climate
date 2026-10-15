@@ -118,7 +118,7 @@ async def async_migrate_entry(hass: HomeAssistant, entry: GreeConfigEntry) -> bo
         )
         return False
 
-    data = deepcopy(entry.data)
+    data = deepcopy(dict(entry.data))
     for device_config in data.get(CONF_DEVICES, {}).values():
         thermostat = device_config.get(CONF_DEVICE_OPTIONS, {}).get(
             CONF_EXTERNAL_THERMOSTAT
