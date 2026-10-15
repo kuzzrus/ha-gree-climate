@@ -31,7 +31,7 @@ No Home Assistant imports here.
 | `config_schema.py` | `CONFIG_SCHEMA` for the `gree_custom:` block in `configuration.yaml`. Validates the YAML, normalizes the MAC addresses and fills the defaults. It also holds the form schemas that the config flow shows. |
 | `migration.py` | Moves a 4.x setup (domain `gree`) to this integration: config entries, the `gree:` YAML block, and the device and entity registry rows. See [config-entry.md](config-entry.md#migration-from-4x). |
 | `climate.py`, `switch.py`, `sensor.py`, `binary_sensor.py`, `number.py`, `select.py` | Entity platforms. `climate.py` also creates the optional external thermostat. |
-| `external_thermostat.py`, `thermostat.py` | The external sensor climate entity and its dead-band control rules. |
+| `external_thermostat.py`, `thermostat.py` | The external sensor climate entity and its hysteresis control rules. |
 | `entity.py`, `platform_helpers.py` | Base entity, availability logic, shared helpers. |
 | `repairs.py` | Fix flow for the `legacy_entries` repair issue, which removes the disabled 4.x entries. |
 | `services.py`, `services.yaml` | Services `get_prop_values` and `get_prop_values_all`. |

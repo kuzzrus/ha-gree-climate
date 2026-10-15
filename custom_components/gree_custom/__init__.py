@@ -1,6 +1,7 @@
 """Gree climate integration init."""
 
 # Standard library imports
+from copy import deepcopy
 import json
 import logging
 from typing import Any
@@ -47,6 +48,10 @@ from .const import (
     CONF_DISABLE_AVAILABLE_CHECK,
     CONF_ENCRYPTION_KEY,
     CONF_ENCRYPTION_VERSION,
+    CONF_EXTERNAL_THERMOSTAT,
+    CONF_EXTERNAL_THERMOSTAT_ACTIVATION_HYSTERESIS,
+    CONF_EXTERNAL_THERMOSTAT_DEACTIVATION_HYSTERESIS,
+    CONF_EXTERNAL_THERMOSTAT_HYSTERESIS,
     CONF_MAC_CONTROLLER_CLOUD,
     CONF_MAC_CONTROLLER_LOCAL,
     CONF_MAX_ONLINE_ATTEMPTS,
@@ -54,12 +59,14 @@ from .const import (
     CONF_RESTORE_STATES,
     CONF_UID,
     CONFENTRY_ID_LOCAL_ONLY,
+    CURRENT_CONF_VERSION,
     DEFAULT_CONNECTION_MAX_ATTEMPTS,
     DEFAULT_CONNECTION_TIMEOUT,
     DEFAULT_DEVICE_PORT,
     DEFAULT_DEVICE_UID,
     DEFAULT_DISABLE_AVAILABLE_CHECK,
     DEFAULT_ENCRYPTION_VERSION,
+    DEFAULT_EXTERNAL_THERMOSTAT_HYSTERESIS,
     DEFAULT_PREFER_CLOUD,
     DEFAULT_RESTORE_STATES,
     DEFAULT_SCAN_INTERVAL,
@@ -88,6 +95,59 @@ PLATFORMS = [
 ]
 
 _LOGGER = logging.getLogger(__name__)
+
+
+async def async_migrate_entry(hass: HomeAssistant, entry: GreeConfigEntry) -> bool:
+    """Migrate an older Gree config entry."""
+    if entry.version > CURRENT_CONF_VERSION:
+        _LOGGER.error(
+            "Cannot migrate config entry %s from newer version %s",
+            entry.entry_id,
+            entry.version,
+        )
+        return False
+
+    if entry.version == CURRENT_CONF_VERSION:
+        return True
+
+    if entry.version != 3:
+        _LOGGER.error(
+            "Cannot migrate config entry %s from unsupported version %s",
+            entry.entry_id,
+            entry.version,
+        )
+        return False
+
+    data = deepcopy(entry.data)
+    for device_config in data.get(CONF_DEVICES, {}).values():
+        thermostat = device_config.get(CONF_DEVICE_OPTIONS, {}).get(
+            CONF_EXTERNAL_THERMOSTAT
+        )
+        if thermostat is None:
+            continue
+
+        legacy_hysteresis = thermostat.pop(
+            CONF_EXTERNAL_THERMOSTAT_HYSTERESIS,
+            DEFAULT_EXTERNAL_THERMOSTAT_HYSTERESIS,
+        )
+        thermostat.setdefault(
+            CONF_EXTERNAL_THERMOSTAT_ACTIVATION_HYSTERESIS, legacy_hysteresis
+        )
+        thermostat.setdefault(
+            CONF_EXTERNAL_THERMOSTAT_DEACTIVATION_HYSTERESIS, legacy_hysteresis
+        )
+
+    hass.config_entries.async_update_entry(
+        entry,
+        data=data,
+        version=CURRENT_CONF_VERSION,
+    )
+    _LOGGER.info(
+        "Migrated config entry %s to version %s",
+        entry.entry_id,
+        CURRENT_CONF_VERSION,
+    )
+    return True
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:

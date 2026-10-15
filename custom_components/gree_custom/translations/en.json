@@ -126,7 +126,8 @@
                         "name": "External thermostat",
                         "data": {
                             "sensor": "Room temperature sensor",
-                            "hysteresis": "Hysteresis",
+                            "activation_hysteresis": "Activation hysteresis",
+                            "deactivation_hysteresis": "Deactivation hysteresis",
                             "heat_active_temperature": "Heat active setpoint",
                             "heat_idle_temperature": "Heat idle setpoint",
                             "cool_active_temperature": "Cool active setpoint",
@@ -134,7 +135,8 @@
                         },
                         "data_description": {
                             "sensor": "Creates the external thermostat entity. Leave empty to disable it.",
-                            "hysteresis": "Heat starts below the target by this value and idles above it by the same value. Cooling uses the opposite limits.",
+                            "activation_hysteresis": "Heat starts below the target by this value. Cooling starts above the target by this value.",
+                            "deactivation_hysteresis": "Heat idles above the target by this value. Cooling idles below the target by this value.",
                             "heat_active_temperature": "Setpoint sent to the Gree unit when heating is needed.",
                             "heat_idle_temperature": "Setpoint sent after the room is warm enough, so the unit stops heating without being powered off.",
                             "cool_active_temperature": "Setpoint sent to the Gree unit when cooling is needed.",
@@ -310,7 +312,10 @@
                 "name": "Humidity Control Target"
             },
             "external_thermostat_hysteresis": {
-                "name": "Thermostat hysteresis"
+                "name": "Activation hysteresis"
+            },
+            "external_thermostat_deactivation_hysteresis": {
+                "name": "Deactivation hysteresis"
             },
             "external_thermostat_heat_active_temperature": {
                 "name": "Heat active setpoint"

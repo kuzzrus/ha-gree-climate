@@ -103,13 +103,14 @@ The collapsed **External thermostat** section adds a second climate entity that 
 | Field | Default | Meaning |
 |---|---|---|
 | Room temperature sensor | none | Creates the external thermostat. Clear the field to remove the entity. |
-| Hysteresis | 0.5 °C | Difference below and above the room target where the thermostat changes between active and idle. Range 0.1 to 5 °C. |
+| Activation hysteresis | 0.5 °C | Difference from the room target that starts heating or cooling. Range 0.1 to 5 °C. |
+| Deactivation hysteresis | 0.5 °C | Difference from the room target that returns heating or cooling to idle. Range 0.1 to 5 °C. |
 | Heat active setpoint | 30 °C | Setpoint sent to the Gree unit when the room needs heat. |
 | Heat idle setpoint | 16 °C | Setpoint sent after the room is warm enough. It must be below the active heat setpoint. |
 | Cool active setpoint | 16 °C | Setpoint sent to the Gree unit when the room needs cooling. |
 | Cool idle setpoint | 30 °C | Setpoint sent after the room is cool enough. It must be above the active cool setpoint. |
 
-After the external thermostat is created, its hysteresis and four setpoints also appear as configuration number entities on the device page. Changes there are saved and applied at once. Reconfigure is only needed to change the room sensor or to add or remove the external thermostat.
+After the external thermostat is created, its two hysteresis offsets and four setpoints also appear as configuration number entities on the device page. Changes there are saved and applied at once. Reconfigure is only needed to change the room sensor or to add or remove the external thermostat.
 
 The external thermostat behavior is described in [Entities](entities.md#external-thermostat).
 

@@ -68,6 +68,8 @@ from .const import (
     CONF_ENCRYPTION_KEY,
     CONF_ENCRYPTION_VERSION,
     CONF_EXTERNAL_THERMOSTAT,
+    CONF_EXTERNAL_THERMOSTAT_ACTIVATION_HYSTERESIS,
+    CONF_EXTERNAL_THERMOSTAT_DEACTIVATION_HYSTERESIS,
     CONF_EXTERNAL_THERMOSTAT_HYSTERESIS,
     CONF_EXTERNAL_THERMOSTAT_SENSOR,
     CONF_EXTRA_SCAN_HOSTS,
@@ -190,7 +192,7 @@ def _thermostat_hysteresis(value: Any) -> float:
     hysteresis = probatio.Coerce(float)(value)
     if not MIN_THERMOSTAT_HYSTERESIS <= hysteresis <= MAX_THERMOSTAT_HYSTERESIS:
         raise probatio.Invalid(
-            f"{CONF_EXTERNAL_THERMOSTAT_HYSTERESIS} must be between "
+            "thermostat hysteresis must be between "
             f"{MIN_THERMOSTAT_HYSTERESIS} and {MAX_THERMOSTAT_HYSTERESIS}"
         )
     return hysteresis
@@ -210,6 +212,20 @@ def _thermostat_control_temperature(value: Any) -> float:
 
 def _validate_external_thermostat(value: dict[str, Any]) -> dict[str, Any]:
     """Check that active and idle control temperatures have useful order."""
+    legacy_hysteresis = value.pop(CONF_EXTERNAL_THERMOSTAT_HYSTERESIS, None)
+    value.setdefault(
+        CONF_EXTERNAL_THERMOSTAT_ACTIVATION_HYSTERESIS,
+        legacy_hysteresis
+        if legacy_hysteresis is not None
+        else DEFAULT_EXTERNAL_THERMOSTAT_HYSTERESIS,
+    )
+    value.setdefault(
+        CONF_EXTERNAL_THERMOSTAT_DEACTIVATION_HYSTERESIS,
+        legacy_hysteresis
+        if legacy_hysteresis is not None
+        else DEFAULT_EXTERNAL_THERMOSTAT_HYSTERESIS,
+    )
+
     if value[CONF_HEAT_ACTIVE_TEMPERATURE] <= value[CONF_HEAT_IDLE_TEMPERATURE]:
         raise probatio.Invalid(
             f"{CONF_HEAT_ACTIVE_TEMPERATURE} must be above {CONF_HEAT_IDLE_TEMPERATURE}"
@@ -225,10 +241,15 @@ EXTERNAL_THERMOSTAT_SCHEMA = probatio.All(
     probatio.Schema(
         {
             probatio.Optional(CONF_EXTERNAL_THERMOSTAT_SENSOR): cv.entity_id,
-            probatio.Optional(
-                CONF_EXTERNAL_THERMOSTAT_HYSTERESIS,
-                default=DEFAULT_EXTERNAL_THERMOSTAT_HYSTERESIS,
-            ): _thermostat_hysteresis,
+            probatio.Optional(CONF_EXTERNAL_THERMOSTAT_HYSTERESIS): (
+                _thermostat_hysteresis
+            ),
+            probatio.Optional(CONF_EXTERNAL_THERMOSTAT_ACTIVATION_HYSTERESIS): (
+                _thermostat_hysteresis
+            ),
+            probatio.Optional(CONF_EXTERNAL_THERMOSTAT_DEACTIVATION_HYSTERESIS): (
+                _thermostat_hysteresis
+            ),
             probatio.Optional(
                 CONF_HEAT_ACTIVE_TEMPERATURE,
                 default=DEFAULT_HEAT_ACTIVE_TEMPERATURE,
@@ -813,6 +834,10 @@ def setup_device_options_schema(  # noqa: C901
         GreeProp.TARGET_TEMPERATURE
     ):
         thermostat_defaults = defaults.get(CONF_EXTERNAL_THERMOSTAT, {})
+        legacy_hysteresis = thermostat_defaults.get(
+            CONF_EXTERNAL_THERMOSTAT_HYSTERESIS,
+            DEFAULT_EXTERNAL_THERMOSTAT_HYSTERESIS,
+        )
         schema.update(
             {
                 probatio.Required(CONF_EXTERNAL_THERMOSTAT): section(
@@ -840,21 +865,26 @@ def setup_device_options_schema(  # noqa: C901
                                     ),
                                 )
                             ),
-                            probatio.Required(
-                                CONF_EXTERNAL_THERMOSTAT_HYSTERESIS,
-                                default=thermostat_defaults.get(
-                                    CONF_EXTERNAL_THERMOSTAT_HYSTERESIS,
-                                    DEFAULT_EXTERNAL_THERMOSTAT_HYSTERESIS,
-                                ),
-                            ): NumberSelector(
-                                NumberSelectorConfig(
-                                    min=MIN_THERMOSTAT_HYSTERESIS,
-                                    max=MAX_THERMOSTAT_HYSTERESIS,
-                                    step=0.1,
-                                    mode=NumberSelectorMode.BOX,
-                                    unit_of_measurement="°C",
+                            **{
+                                probatio.Required(
+                                    field,
+                                    default=thermostat_defaults.get(
+                                        field, legacy_hysteresis
+                                    ),
+                                ): NumberSelector(
+                                    NumberSelectorConfig(
+                                        min=MIN_THERMOSTAT_HYSTERESIS,
+                                        max=MAX_THERMOSTAT_HYSTERESIS,
+                                        step=0.1,
+                                        mode=NumberSelectorMode.BOX,
+                                        unit_of_measurement="°C",
+                                    )
                                 )
-                            ),
+                                for field in (
+                                    CONF_EXTERNAL_THERMOSTAT_ACTIVATION_HYSTERESIS,
+                                    CONF_EXTERNAL_THERMOSTAT_DEACTIVATION_HYSTERESIS,
+                                )
+                            },
                             **{
                                 probatio.Required(
                                     field,

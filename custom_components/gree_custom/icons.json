@@ -60,6 +60,9 @@
       "external_thermostat_hysteresis": {
         "default": "mdi:swap-vertical"
       },
+      "external_thermostat_deactivation_hysteresis": {
+        "default": "mdi:swap-vertical"
+      },
       "external_thermostat_heat_active_temperature": {
         "default": "mdi:thermometer-chevron-up"
       },

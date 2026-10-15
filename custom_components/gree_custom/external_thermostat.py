@@ -33,6 +33,8 @@ from .const import (
     CONF_COOL_IDLE_TEMPERATURE,
     CONF_DEVICE_OPTIONS,
     CONF_EXTERNAL_THERMOSTAT,
+    CONF_EXTERNAL_THERMOSTAT_ACTIVATION_HYSTERESIS,
+    CONF_EXTERNAL_THERMOSTAT_DEACTIVATION_HYSTERESIS,
     CONF_EXTERNAL_THERMOSTAT_HYSTERESIS,
     CONF_EXTERNAL_THERMOSTAT_SENSOR,
     CONF_HEAT_ACTIVE_TEMPERATURE,
@@ -304,8 +306,18 @@ class GreeExternalThermostat(  # pyright: ignore[reportIncompatibleVariableOverr
                 self._attr_current_temperature,
                 self._attr_target_temperature,
                 self._setting(
-                    CONF_EXTERNAL_THERMOSTAT_HYSTERESIS,
-                    DEFAULT_EXTERNAL_THERMOSTAT_HYSTERESIS,
+                    CONF_EXTERNAL_THERMOSTAT_ACTIVATION_HYSTERESIS,
+                    self._setting(
+                        CONF_EXTERNAL_THERMOSTAT_HYSTERESIS,
+                        DEFAULT_EXTERNAL_THERMOSTAT_HYSTERESIS,
+                    ),
+                ),
+                self._setting(
+                    CONF_EXTERNAL_THERMOSTAT_DEACTIVATION_HYSTERESIS,
+                    self._setting(
+                        CONF_EXTERNAL_THERMOSTAT_HYSTERESIS,
+                        DEFAULT_EXTERNAL_THERMOSTAT_HYSTERESIS,
+                    ),
                 ),
                 self._running,
             )
