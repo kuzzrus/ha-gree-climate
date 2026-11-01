@@ -30,7 +30,7 @@ Facts about how Gree devices behave on the wire. Most of these are not visible f
 ## Temperature
 
 - `SetTem` is a whole number of degrees. `TemRec` adds the half degree.
-- Some devices report sensor temperatures with a +40 offset. `TempOffsetResolver` in `aiogree/helpers.py` detects this from the values it sees.
+- Some devices report sensor temperatures with a +40 offset. `TempOffsetResolver` in `aiogree/helpers.py` detects this from the values it sees. When both forms are plausible for an outdoor sensor, the integration prefers the offset form. Outdoor properties normally need the offset to report temperatures below zero. Clear evidence for the plain form still overrides that preference.
 - Fahrenheit uses the protocol's own lookup table, not a formula.
 
 ## Discovery and network

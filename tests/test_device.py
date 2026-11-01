@@ -273,6 +273,19 @@ async def test_a_sensor_that_reports_celsius_plus_forty_is_corrected(
     assert bound.humidity == 55
 
 
+async def test_ambiguous_outdoor_temperature_prefers_offset(
+    unit: FakeGreeDevice,
+) -> None:
+    """The outdoor value 42 means 2 degrees when encoded with the offset."""
+    unit.values[GreeProp.SENSOR_OUTSIDE_TEMPERATURE_1.value] = 42
+    device, transport = await bind(unit)
+
+    try:
+        assert device.outdoors_temperature_c == 2
+    finally:
+        await transport.disconnect()
+
+
 async def test_push_sends_only_what_changed(
     unit: FakeGreeDevice, bound: GreeDevice
 ) -> None:

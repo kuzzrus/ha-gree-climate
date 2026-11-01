@@ -67,7 +67,7 @@ Created when the unit has the sensor. Nothing to enable.
 | Outdoor Temperature | °C | The outdoor unit's temperature sensor. |
 | Indoor Humidity | % | The room humidity the unit measures. |
 
-Some units report temperatures with an offset of 40. The integration detects that from the values it sees and corrects it.
+Some units report temperatures with an offset of 40. The integration detects that from the values it sees and corrects it. An ambiguous outdoor value uses the offset form, so a raw value of 42 is shown as 2 °C.
 
 ## Binary sensor
 
