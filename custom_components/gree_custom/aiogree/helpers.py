@@ -131,11 +131,13 @@ class TempOffsetResolver:
         indoor_max: float = 40.0,  # hottest plausible indoor °C
         offset: float = TEMSEN_OFFSET,  # device's fixed offset
         margin: float = 2.0,  # tolerance before "impossible":
+        prefer_offset: bool | None = None,
     ) -> None:
         """Initialize the resolver."""
         self._lo_lim = indoor_min - margin
         self._hi_lim = indoor_max + margin
         self._offset = offset
+        self._prefer_offset = prefer_offset
 
         self._min_raw: float | None = None
         self._max_raw: float | None = None
@@ -158,6 +160,8 @@ class TempOffsetResolver:
         penalty_no = self._penalty(lo, hi)
         penalty_off = self._penalty(lo - self._offset, hi - self._offset)
         if penalty_no == penalty_off:
+            if self._has_offset is None:
+                self._has_offset = self._prefer_offset
             return  # still ambiguous - keep collecting data
         self._has_offset = penalty_off < penalty_no
 

@@ -41,7 +41,7 @@ The unit has its own temperature scale, Celsius or Fahrenheit, which you change 
 
 ## External thermostat
 
-The optional **External thermostat** climate entity uses a Home Assistant temperature sensor to regulate the room. It is separate from the main climate entity. Its target temperature is the room target, so it can be used directly as a thermostat in Home Assistant or Yandex Smart Home.
+The optional **External thermostat** climate entity uses a Home Assistant temperature sensor to regulate the room. It is separate from the main climate entity. Its target temperature is the room target, so it can be used directly as a thermostat in Home Assistant or Yandex Smart Home. Its current temperature always comes from the sensor selected inside the **External thermostat** section, not from the separate external sensor selected for the main climate entity.
 
 The entity supports Heat, Cool and Off when those modes are enabled for the main climate entity. It uses separate activation and deactivation offsets around the target:
 
@@ -67,7 +67,7 @@ Created when the unit has the sensor. Nothing to enable.
 | Outdoor Temperature | °C | The outdoor unit's temperature sensor. |
 | Indoor Humidity | % | The room humidity the unit measures. |
 
-Some units report temperatures with an offset of 40. The integration detects that from the values it sees and corrects it.
+Some units report temperatures with an offset of 40. The integration detects that from the values it sees and corrects it. An ambiguous outdoor value uses the offset form, so a raw value of 42 is shown as 2 °C.
 
 ## Binary sensor
 

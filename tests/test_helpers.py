@@ -156,6 +156,21 @@ def test_temp_offset_resolver_can_change_its_mind() -> None:
     assert resolver.evaluate(65) == 25
 
 
+def test_temp_offset_resolver_can_prefer_offset_when_ambiguous() -> None:
+    """A caller can choose the offset form when both forms are plausible."""
+    resolver = TempOffsetResolver(prefer_offset=True)
+
+    assert resolver.evaluate(42) == 2
+
+
+def test_temp_offset_resolver_can_override_preference() -> None:
+    """Clear evidence wins over the preference for an ambiguous value."""
+    resolver = TempOffsetResolver(prefer_offset=True)
+    resolver.evaluate(42)
+
+    assert resolver.evaluate(-10) == -10
+
+
 def test_encrypt_pack_needs_a_cipher() -> None:
     """A payload must never go out unencrypted by accident."""
     with pytest.raises(GreeError, match="Cipher must not be None"):

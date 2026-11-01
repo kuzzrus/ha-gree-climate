@@ -651,7 +651,10 @@ class GreeDevice:
         """Return the current outside temperature if available."""
 
         if self._temp_processor_outdoors is None:
-            self._temp_processor_outdoors = TempOffsetResolver()
+            # Outdoor sensor properties normally use Celsius + 40 so they can
+            # report temperatures below zero. Prefer that form when both raw
+            # and corrected values are plausible, for example 42 and 2 °C.
+            self._temp_processor_outdoors = TempOffsetResolver(prefer_offset=True)
 
         for prop in (
             GreeProp.SENSOR_OUTSIDE_TEMPERATURE_1,
