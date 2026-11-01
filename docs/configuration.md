@@ -92,23 +92,25 @@ One page per device. Gree devices do not report reliably which features they hav
 | Horizontal Swing Modes | all | The horizontal positions and swing ranges. Only shown when the unit has horizontal swing. |
 | Device Features and Modes | all the unit supports | Which switches and selects to create. See [entities.md](entities.md). |
 | Temperature Step | 1 | The step of the target temperature, 0.5 to 5 in steps of 0.5. In Fahrenheit the step is rounded to a whole degree. |
-| External Temperature Sensor | none | A Home Assistant sensor that replaces the unit's own room temperature in the climate entity. |
+| Temperature sensor for the main climate entity | none | A Home Assistant sensor that replaces the unit's own room temperature in the main climate entity. |
 | External Humidity Sensor | none | A Home Assistant sensor that replaces the unit's own humidity in the climate entity. |
 | Restore Entities | on | After a restart, send the last known Home Assistant state to the device instead of taking over the device state. See [Restoring state](entities.md#restoring-state-after-a-restart). |
 
-The external sensors only change what the climate entity shows. The unit keeps using its own sensor to regulate.
+The external sensors only change what the main climate entity shows. The unit keeps using its own sensor to regulate.
 
 The collapsed **External thermostat** section adds a second climate entity that does regulate from another sensor:
 
 | Field | Default | Meaning |
 |---|---|---|
-| Room temperature sensor | none | Creates the external thermostat. Clear the field to remove the entity. |
+| Temperature sensor for thermostat control | none | Creates the external thermostat. Clear the field to remove the entity. |
 | Activation hysteresis | 0.5 °C | Difference from the room target that starts heating or cooling. Range 0.1 to 5 °C. |
 | Deactivation hysteresis | 0.5 °C | Difference from the room target that returns heating or cooling to idle. Range 0.1 to 5 °C. |
 | Heat active setpoint | 30 °C | Setpoint sent to the Gree unit when the room needs heat. |
 | Heat idle setpoint | 16 °C | Setpoint sent after the room is warm enough. It must be below the active heat setpoint. |
 | Cool active setpoint | 16 °C | Setpoint sent to the Gree unit when the room needs cooling. |
 | Cool idle setpoint | 30 °C | Setpoint sent after the room is cool enough. It must be above the active cool setpoint. |
+
+The two temperature sensor fields are independent. The sensor above changes only the temperature shown by the main climate entity. The room temperature sensor inside this section controls the external thermostat.
 
 After the external thermostat is created, its two hysteresis offsets and four setpoints also appear as configuration number entities on the device page. Changes there are saved and applied at once. Reconfigure is only needed to change the room sensor or to add or remove the external thermostat.
 
