@@ -52,6 +52,7 @@ from .const import (
     CONF_EXTERNAL_THERMOSTAT_ACTIVATION_HYSTERESIS,
     CONF_EXTERNAL_THERMOSTAT_DEACTIVATION_HYSTERESIS,
     CONF_EXTERNAL_THERMOSTAT_HYSTERESIS,
+    CONF_EXTERNAL_THERMOSTAT_IFEEL,
     CONF_MAC_CONTROLLER_CLOUD,
     CONF_MAC_CONTROLLER_LOCAL,
     CONF_MAX_ONLINE_ATTEMPTS,
@@ -67,6 +68,7 @@ from .const import (
     DEFAULT_DISABLE_AVAILABLE_CHECK,
     DEFAULT_ENCRYPTION_VERSION,
     DEFAULT_EXTERNAL_THERMOSTAT_HYSTERESIS,
+    DEFAULT_EXTERNAL_THERMOSTAT_IFEEL,
     DEFAULT_PREFER_CLOUD,
     DEFAULT_RESTORE_STATES,
     DEFAULT_SCAN_INTERVAL,
@@ -110,7 +112,7 @@ async def async_migrate_entry(hass: HomeAssistant, entry: GreeConfigEntry) -> bo
     if entry.version == CURRENT_CONF_VERSION:
         return True
 
-    if entry.version != 3:
+    if entry.version not in (3, 4):
         _LOGGER.error(
             "Cannot migrate config entry %s from unsupported version %s",
             entry.entry_id,
@@ -126,15 +128,19 @@ async def async_migrate_entry(hass: HomeAssistant, entry: GreeConfigEntry) -> bo
         if thermostat is None:
             continue
 
-        legacy_hysteresis = thermostat.pop(
-            CONF_EXTERNAL_THERMOSTAT_HYSTERESIS,
-            DEFAULT_EXTERNAL_THERMOSTAT_HYSTERESIS,
-        )
+        if entry.version == 3:
+            legacy_hysteresis = thermostat.pop(
+                CONF_EXTERNAL_THERMOSTAT_HYSTERESIS,
+                DEFAULT_EXTERNAL_THERMOSTAT_HYSTERESIS,
+            )
+            thermostat.setdefault(
+                CONF_EXTERNAL_THERMOSTAT_ACTIVATION_HYSTERESIS, legacy_hysteresis
+            )
+            thermostat.setdefault(
+                CONF_EXTERNAL_THERMOSTAT_DEACTIVATION_HYSTERESIS, legacy_hysteresis
+            )
         thermostat.setdefault(
-            CONF_EXTERNAL_THERMOSTAT_ACTIVATION_HYSTERESIS, legacy_hysteresis
-        )
-        thermostat.setdefault(
-            CONF_EXTERNAL_THERMOSTAT_DEACTIVATION_HYSTERESIS, legacy_hysteresis
+            CONF_EXTERNAL_THERMOSTAT_IFEEL, DEFAULT_EXTERNAL_THERMOSTAT_IFEEL
         )
 
     hass.config_entries.async_update_entry(

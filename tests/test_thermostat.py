@@ -1,7 +1,25 @@
 """Tests for the external thermostat control rules."""
 
 import pytest
-from thermostat import should_run
+from thermostat import ifeel_temperature, should_run
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        (15.49, None),
+        (15.5, 16),
+        (21.4, 21),
+        (21.5, 22),
+        (35.49, 35),
+        (35.5, None),
+        (float("inf"), None),
+        (float("nan"), None),
+    ],
+)
+def test_ifeel_temperature(value: float, expected: int | None) -> None:
+    """I Feel uses safe whole-degree room temperatures."""
+    assert ifeel_temperature(value) == expected
 
 
 @pytest.mark.parametrize(

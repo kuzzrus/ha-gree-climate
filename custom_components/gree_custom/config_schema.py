@@ -32,6 +32,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import section
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.selector import (
+    BooleanSelector,
     EntitySelector,
     EntitySelectorConfig,
     NumberSelector,
@@ -71,6 +72,7 @@ from .const import (
     CONF_EXTERNAL_THERMOSTAT_ACTIVATION_HYSTERESIS,
     CONF_EXTERNAL_THERMOSTAT_DEACTIVATION_HYSTERESIS,
     CONF_EXTERNAL_THERMOSTAT_HYSTERESIS,
+    CONF_EXTERNAL_THERMOSTAT_IFEEL,
     CONF_EXTERNAL_THERMOSTAT_SENSOR,
     CONF_EXTRA_SCAN_HOSTS,
     CONF_EXTRA_SCAN_NETWORKS,
@@ -98,6 +100,7 @@ from .const import (
     DEFAULT_ENCRYPTION_KEY,
     DEFAULT_ENCRYPTION_VERSION,
     DEFAULT_EXTERNAL_THERMOSTAT_HYSTERESIS,
+    DEFAULT_EXTERNAL_THERMOSTAT_IFEEL,
     DEFAULT_FAN_MODES,
     DEFAULT_HEAT_ACTIVE_TEMPERATURE,
     DEFAULT_HEAT_IDLE_TEMPERATURE,
@@ -112,6 +115,7 @@ from .const import (
     ENCRYPTION_VERSION_AUTO,
     GATTR_FEAT_QUIET_MODE,
     GATTR_FEAT_TURBO,
+    IFEEL_TEMPERATURE_PROPS,
     MAX_THERMOSTAT_HYSTERESIS,
     MIN_SCAN_INTERVAL,
     MIN_THERMOSTAT_HYSTERESIS,
@@ -250,6 +254,10 @@ EXTERNAL_THERMOSTAT_SCHEMA = probatio.All(
             probatio.Optional(CONF_EXTERNAL_THERMOSTAT_DEACTIVATION_HYSTERESIS): (
                 _thermostat_hysteresis
             ),
+            probatio.Optional(
+                CONF_EXTERNAL_THERMOSTAT_IFEEL,
+                default=DEFAULT_EXTERNAL_THERMOSTAT_IFEEL,
+            ): cv.boolean,
             probatio.Optional(
                 CONF_HEAT_ACTIVE_TEMPERATURE,
                 default=DEFAULT_HEAT_ACTIVE_TEMPERATURE,
@@ -917,6 +925,22 @@ def setup_device_options_schema(  # noqa: C901
                                     ),
                                 )
                             },
+                            **(
+                                {
+                                    probatio.Required(
+                                        CONF_EXTERNAL_THERMOSTAT_IFEEL,
+                                        default=thermostat_defaults.get(
+                                            CONF_EXTERNAL_THERMOSTAT_IFEEL,
+                                            DEFAULT_EXTERNAL_THERMOSTAT_IFEEL,
+                                        ),
+                                    ): BooleanSelector()
+                                }
+                                if any(
+                                    device.supports_property(prop)
+                                    for prop in IFEEL_TEMPERATURE_PROPS
+                                )
+                                else {}
+                            ),
                         }
                     ),
                     {"collapsed": True},

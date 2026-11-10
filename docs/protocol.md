@@ -32,6 +32,7 @@ Facts about how Gree devices behave on the wire. Most of these are not visible f
 - `SetTem` is a whole number of degrees. `TemRec` adds the half degree.
 - Some devices report sensor temperatures with a +40 offset. `TempOffsetResolver` in `aiogree/helpers.py` detects this from the values it sees. When both forms are plausible for an outdoor sensor, the integration prefers the offset form. Outdoor properties normally need the offset to report temperatures below zero. Clear evidence for the plain form still overrides that preference.
 - Fahrenheit uses the protocol's own lookup table, not a formula.
+- On one Airy with firmware `U-4MWB65VRV2.10.bin`, the physical remote's I Feel mode wrote its temperature plus 40 to both `EnvTem` and `TemSen`. Warming the remote changed both values from 66 to 73. `TemSor` and `BlkTemCom` stayed at zero. Writing `EnvTem` and `TemSen` over the device connection is still experimental.
 
 ## Discovery and network
 

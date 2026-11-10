@@ -120,6 +120,7 @@ gree_custom:
                       sensor: "sensor.living_room_temperature" # Temperature sensor used for control | entity ID | omit to disable the external thermostat
                       activation_hysteresis: 0.5 # Offset from the room target that starts heating or cooling | 0.1 to 5 °C | default = 0.5
                       deactivation_hysteresis: 0.5 # Offset from the room target that returns heating or cooling to idle | 0.1 to 5 °C | default = 0.5
+                      ifeel_temperature_injection: false # Send the room sensor temperature to supported Gree units every 20 seconds | bool | default = false
                       heat_active_temperature: 30 # Gree setpoint while heating is needed | 16 to 30 °C | default = 30
                       heat_idle_temperature: 16 # Gree setpoint after the heat target is reached | 16 to 30 °C and below heat_active_temperature | default = 16
                       cool_active_temperature: 16 # Gree setpoint while cooling is needed | 16 to 30 °C | default = 16

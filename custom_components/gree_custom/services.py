@@ -24,7 +24,14 @@ from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import config_validation as cv, device_registry as dr
 
 from .aiogree.device import GreeDevice
-from .const import ATTR_SVC_PROPS, DOMAIN
+from .const import (
+    ATTR_SVC_PROPS,
+    DOMAIN,
+    IFEEL_TEMPERATURE_OFFSET,
+    IFEEL_TEMPERATURE_PROPS,
+    MAX_IFEEL_TEMPERATURE,
+    MIN_IFEEL_TEMPERATURE,
+)
 from .coordinator import GreeConfigEntry, GreeCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -41,6 +48,31 @@ SVC_GET_PROPS_SCHEMA = probatio.Schema(
     SVC_GET_PROPS_ALL_SCHEMA.extend(
         {
             probatio.Required(ATTR_SVC_PROPS): probatio.All([cv.string]),
+        }
+    )
+)
+
+ATTR_TEMPERATURE = "temperature"
+SVC_TEST_IFEEL_TEMPERATURE = "test_ifeel_temperature"
+
+
+def _validate_ifeel_temperature(value: Any) -> int:
+    """Validate a whole degree I Feel test temperature in Celsius."""
+    temperature = probatio.Coerce(float)(value)
+    if not temperature.is_integer():
+        raise probatio.Invalid("I Feel test temperature must be a whole number")
+    if not MIN_IFEEL_TEMPERATURE <= temperature <= MAX_IFEEL_TEMPERATURE:
+        raise probatio.Invalid(
+            "I Feel test temperature must be between "
+            f"{MIN_IFEEL_TEMPERATURE} and {MAX_IFEEL_TEMPERATURE}"
+        )
+    return int(temperature)
+
+
+SVC_TEST_IFEEL_TEMPERATURE_SCHEMA = probatio.Schema(
+    SVC_GET_PROPS_ALL_SCHEMA.extend(
+        {
+            probatio.Required(ATTR_TEMPERATURE): _validate_ifeel_temperature,
         }
     )
 )
@@ -143,6 +175,47 @@ async def async_get_prop_values(call: ServiceCall) -> ServiceResponse:
     return result
 
 
+async def async_test_ifeel_temperature(call: ServiceCall) -> ServiceResponse:
+    """Send an experimental I Feel temperature and read it back."""
+    _LOGGER.debug("Service called: test_ifeel_temperature")
+
+    device = async_get_device_from_service_call(call)
+    temperature = call.data[ATTR_TEMPERATURE]
+    raw_temperature = temperature + IFEEL_TEMPERATURE_OFFSET
+
+    before = await device.query_props(
+        props=[prop.value for prop in IFEEL_TEMPERATURE_PROPS],
+        error_as_missing=True,
+        max_attempts=1,
+    )
+    if before.missing_props:
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="ifeel_temperature_unsupported",
+        )
+
+    sent = {prop.value: raw_temperature for prop in IFEEL_TEMPERATURE_PROPS}
+    await device.set_props(sent)
+
+    after = await device.query_props(
+        props=[prop.value for prop in IFEEL_TEMPERATURE_PROPS],
+        error_as_missing=True,
+        max_attempts=1,
+    )
+
+    return {
+        "temperature": temperature,
+        "raw_value": raw_temperature,
+        "sent": sent,
+        "before": before.prop_values,
+        "after": after.prop_values,
+        "values_match": all(
+            after.prop_values.get(prop) == str(raw_temperature) for prop in sent
+        ),
+        "missing": after.missing_props,
+    }
+
+
 @callback
 def async_setup_services(hass: HomeAssistant) -> None:
     """Set up the services for Gree integration."""
@@ -157,6 +230,12 @@ def async_setup_services(hass: HomeAssistant) -> None:
             SVC_GET_PROPS,
             async_get_prop_values,
             SVC_GET_PROPS_SCHEMA,
+            SupportsResponse.ONLY,
+        ),
+        (
+            SVC_TEST_IFEEL_TEMPERATURE,
+            async_test_ifeel_temperature,
+            SVC_TEST_IFEEL_TEMPERATURE_SCHEMA,
             SupportsResponse.ONLY,
         ),
     ):

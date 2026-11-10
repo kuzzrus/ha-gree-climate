@@ -53,6 +53,8 @@ The thermostat keeps the Gree unit powered on while it regulates. It sends an ac
 
 The device page has six configuration number entities for the two hysteresis offsets and the four setpoints. A change is saved and used at once. Active and idle setpoints cannot cross. The same values are also available in the reconfigure flow.
 
+Supported units also get an **External temperature transmission** configuration switch. When it is on, the integration rounds the selected room sensor to a whole degree and sends it to `EnvTem` and `TemSen` every 20 seconds. The command always disables its own beep. Transmission continues when the external thermostat entity is off. It stops when the switch is off or the sensor is unavailable. This feature is experimental because the unit may still replace or ignore the value.
+
 Turning this entity off turns the Gree unit off. Direct changes made through the main climate entity can be replaced by the thermostat on the next sensor or device update. Turn the external thermostat off before using the main entity for direct control.
 
 The entity becomes unavailable when the selected sensor has no numeric value or when the Gree device is unavailable. It keeps its last command and waits for valid data. Its target temperature and mode are restored after a Home Assistant restart.
@@ -91,6 +93,7 @@ Each switch needs its feature enabled in **Device Features and Modes**, and the 
 | Display Light | Display Light | every mode | The display and indicator lights on the unit. Configuration category. |
 | Display Auto Brightness | Display Auto Brightness | when Display Light is on | Lets the light sensor dim the display. Configuration category. |
 | Beeper | Beeper | always | Whether the unit beeps when it receives a command. This is a flag the integration adds to every command, not a state that is read from the unit. Always available, even when the unit is offline. |
+| External temperature transmission | External thermostat | while its configuration switch is on | Experimental. Periodically sends the selected room sensor temperature to the unit without a beep. Configuration category. |
 
 Two switches are integration features. They do not exist on the unit and their state is kept by Home Assistant. Both are in the configuration category.
 
