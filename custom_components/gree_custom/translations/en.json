@@ -128,6 +128,7 @@
                             "sensor": "Temperature sensor for thermostat control",
                             "activation_hysteresis": "Activation hysteresis",
                             "deactivation_hysteresis": "Deactivation hysteresis",
+                            "ifeel_temperature_injection": "Send external temperature to the unit",
                             "heat_active_temperature": "Heat active setpoint",
                             "heat_idle_temperature": "Heat idle setpoint",
                             "cool_active_temperature": "Cool active setpoint",
@@ -137,6 +138,7 @@
                             "sensor": "The external thermostat uses this sensor for control. This is separate from the sensor shown by the main climate entity. Leave empty to disable the thermostat.",
                             "activation_hysteresis": "Heat starts below the target by this value. Cooling starts above the target by this value.",
                             "deactivation_hysteresis": "Heat idles above the target by this value. Cooling idles below the target by this value.",
+                            "ifeel_temperature_injection": "Experimental. Sends the selected room sensor temperature to supported Gree units every 20 seconds, even when the external thermostat is off. The periodic command is silent.",
                             "heat_active_temperature": "Setpoint sent to the Gree unit when heating is needed.",
                             "heat_idle_temperature": "Setpoint sent after the room is warm enough, so the unit stops heating without being powered off.",
                             "cool_active_temperature": "Setpoint sent to the Gree unit when cooling is needed.",
@@ -380,6 +382,9 @@
             },
             "beeper": {
                 "name": "Beeper"
+            },
+            "external_thermostat_ifeel": {
+                "name": "External temperature transmission"
             }
         }
     },
@@ -407,6 +412,9 @@
         },
         "invalid_config_data": {
             "message": "There was a problem performing the action. The configuration entry has invalid data."
+        },
+        "ifeel_temperature_unsupported": {
+            "message": "This device does not report the temperature properties needed for the I Feel test."
         },
         "humidity_mode_unavailable": {
             "message": "Humidity Control is only available in Cool and Dry modes."
@@ -470,6 +478,19 @@
                 },
                 "prop_list": {
                     "name": "List of properties to query"
+                }
+            }
+        },
+        "test_ifeel_temperature": {
+            "name": "Test I Feel temperature",
+            "description": "Experimentally sends an external sensor temperature to EnvTem and TemSen, then reads both properties back.",
+            "fields": {
+                "device_id": {
+                    "name": "Device ID"
+                },
+                "temperature": {
+                    "name": "Test temperature",
+                    "description": "Temperature to send in whole degrees Celsius."
                 }
             }
         }

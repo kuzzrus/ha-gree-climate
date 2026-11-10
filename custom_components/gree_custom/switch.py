@@ -2,7 +2,7 @@
 
 from collections.abc import Callable
 import logging
-from typing import Any, override
+from typing import Any, cast, override
 
 from homeassistant.components.switch import (
     SwitchDeviceClass,
@@ -21,6 +21,12 @@ from .aiogree.errors import GreeContinuousDryUnavailable
 from .const import (
     ATTR_AUTO_LIGHT,
     ATTR_AUTO_XFAN,
+    CONF_DEVICE_OPTIONS,
+    CONF_DEVICES,
+    CONF_EXTERNAL_THERMOSTAT,
+    CONF_EXTERNAL_THERMOSTAT_IFEEL,
+    CONF_EXTERNAL_THERMOSTAT_SENSOR,
+    DEFAULT_EXTERNAL_THERMOSTAT_IFEEL,
     DOMAIN,
     GATTR_ANTI_DIRECT_BLOW,
     GATTR_BEEPER,
@@ -32,12 +38,15 @@ from .const import (
     GATTR_FEAT_SLEEP_MODE,
     GATTR_FEAT_SMART_HEAT_8C,
     GATTR_FEAT_XFAN,
+    IFEEL_TEMPERATURE_PROPS,
 )
 from .coordinator import GreeConfigEntry, GreeCoordinator
 from .entity import GreeEntity, GreeEntityDescription
 from .platform_helpers import supported_descriptions
 
 _LOGGER = logging.getLogger(__name__)
+
+GATTR_EXTERNAL_THERMOSTAT_IFEEL = "external_thermostat_ifeel"
 
 
 def _set_humidity_control_continuous(
@@ -65,6 +74,19 @@ class GreeSwitchDescription(
     device_class = SwitchDeviceClass.SWITCH
     value_func: Callable[[GreeDevice, GreeCoordinator], bool]
     updates_device: bool = True
+
+
+class GreeThermostatSwitchDescription(
+    GreeEntityDescription, SwitchEntityDescription, frozen_or_thawed=True
+):
+    """Description of a stored external thermostat switch."""
+
+
+THERMOSTAT_IFEEL_SWITCH_DESCRIPTION = GreeThermostatSwitchDescription(
+    key=GATTR_EXTERNAL_THERMOSTAT_IFEEL,
+    translation_key=GATTR_EXTERNAL_THERMOSTAT_IFEEL,
+    entity_category=EntityCategory.CONFIG,
+)
 
 
 SWITCH_TYPES: list[GreeSwitchDescription] = [
@@ -181,7 +203,7 @@ async def async_setup_entry(
 
     _LOGGER.debug("Setting up Switch Entities")
 
-    entities: list[GreeSwitch] = []
+    entities: list[GreeSwitch | GreeThermostatIfeelSwitch] = []
 
     for coordinator in entry.runtime_data.values():
         descriptions = supported_descriptions(
@@ -218,6 +240,14 @@ async def async_setup_entry(
             )
             for description in descriptions
         )
+
+        options = coordinator.device_config.get(CONF_DEVICE_OPTIONS, {})
+        thermostat_config = options.get(CONF_EXTERNAL_THERMOSTAT, {})
+        if thermostat_config.get(CONF_EXTERNAL_THERMOSTAT_SENSOR) and any(
+            coordinator.device.supports_property(prop)
+            for prop in IFEEL_TEMPERATURE_PROPS
+        ):
+            entities.append(GreeThermostatIfeelSwitch(coordinator, entry))
 
     async_add_entities(entities)
 
@@ -309,7 +339,7 @@ class GreeSwitch(GreeEntity, SwitchEntity, RestoreEntity):  # pyright: ignore[re
 
     @override
     async def async_turn_off(self, **kwargs: Any) -> None:
-        """Turn the switch on."""
+        """Turn the switch off."""
         if not self.available:
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="entity_unavailable"
@@ -334,3 +364,63 @@ class GreeSwitch(GreeEntity, SwitchEntity, RestoreEntity):  # pyright: ignore[re
             ) from err
 
         self.async_write_ha_state()
+
+
+class GreeThermostatIfeelSwitch(GreeEntity, SwitchEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
+    """Store the external thermostat I Feel injection option."""
+
+    entity_description: GreeThermostatSwitchDescription
+
+    def __init__(self, coordinator: GreeCoordinator, entry: GreeConfigEntry) -> None:
+        """Initialize the external temperature injection switch."""
+        super().__init__(
+            THERMOSTAT_IFEEL_SWITCH_DESCRIPTION,
+            coordinator,
+            restore_state=False,
+            check_availability=False,
+        )
+        self._entry = entry
+
+    def _thermostat_config(self) -> dict[str, Any]:
+        """Return the current external thermostat configuration."""
+        options = self.coordinator.device_config.get(CONF_DEVICE_OPTIONS, {})
+        return cast(dict[str, Any], options.get(CONF_EXTERNAL_THERMOSTAT, {}))
+
+    @property
+    @override
+    def is_on(self) -> bool:
+        """Return whether external temperature injection is enabled."""
+        return bool(
+            self._thermostat_config().get(
+                CONF_EXTERNAL_THERMOSTAT_IFEEL, DEFAULT_EXTERNAL_THERMOSTAT_IFEEL
+            )
+        )
+
+    async def _async_set_enabled(self, enabled: bool) -> None:
+        """Save and apply the setting without reloading the integration."""
+        data = dict(self._entry.data)
+        devices = dict(data[CONF_DEVICES])
+        device_config = dict(devices[self.device.mac_address])
+        options = dict(device_config[CONF_DEVICE_OPTIONS])
+        thermostat_config = dict(options[CONF_EXTERNAL_THERMOSTAT])
+
+        thermostat_config[CONF_EXTERNAL_THERMOSTAT_IFEEL] = enabled
+        options[CONF_EXTERNAL_THERMOSTAT] = thermostat_config
+        device_config[CONF_DEVICE_OPTIONS] = options
+        devices[self.device.mac_address] = device_config
+        data[CONF_DEVICES] = devices
+
+        self.coordinator.device_config = device_config
+        self.hass.config_entries.async_update_entry(self._entry, data=data)
+        self.coordinator.async_update_listeners()
+        self.async_write_ha_state()
+
+    @override
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        """Enable external temperature injection."""
+        await self._async_set_enabled(True)
+
+    @override
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        """Disable external temperature injection."""
+        await self._async_set_enabled(False)

@@ -2,7 +2,7 @@
 
 ## Actions
 
-The integration provides two actions, called services in older Home Assistant versions. Both read raw properties from a device and return the answer. They change nothing on the device. Use them under **Developer tools** > **Actions**, or in a script.
+The integration provides three actions, called services in older Home Assistant versions. Two actions only read raw properties. The experimental I Feel action writes two temperature properties. Use them under **Developer tools** > **Actions**, or in a script.
 
 A property is one named value in the Gree protocol, such as `Pow` for power or `SetTem` for the target temperature. The device decides which properties it knows.
 
@@ -37,9 +37,31 @@ data:
   device_id: 1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d
 ```
 
+### `gree_custom.test_ifeel_temperature`
+
+This experimental action tests whether a device accepts a remote sensor
+temperature over its current connection. It writes the temperature plus the
+Gree offset of 40 to both `EnvTem` and `TemSen`, then reads them back. It only
+accepts whole temperatures from 16 to 35 °C.
+
+Enable I Feel with the physical remote before the test. Do not use this action
+in an automation until the result has been checked on the real device.
+
+```yaml
+action: gree_custom.test_ifeel_temperature
+data:
+  device_id: 1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d
+  temperature: 22
+```
+
+The response contains the requested temperature, raw value, values before and
+after the command, and `values_match`. A true `values_match` means the immediate
+read returned the sent value. It does not prove that the device will keep the
+value or use it for control.
+
 ### The response
 
-Both actions return a response, so use `response_variable` in a script.
+All three actions return a response, so use `response_variable` in a script.
 
 ```yaml
 states:

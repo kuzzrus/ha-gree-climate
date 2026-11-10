@@ -49,6 +49,25 @@ Assistant shows them as extra fan modes.
 Self-cleaning and UVC control are not exposed. The known local protocol does not
 provide reliable properties for them.
 
+## I Feel temperature test
+
+On one Airy with Wi-Fi firmware `U-4MWB65VRV2.10.bin`, enabling I Feel on the
+physical remote changed both `EnvTem` and `TemSen` to the remote temperature
+plus 40. Heating the remote changed both raw values from 66 to 73, which means
+26 to 33 °C. `TemSor` and `BlkTemCom` stayed at zero.
+
+The `gree_custom.test_ifeel_temperature` action can test whether the unit also
+accepts these values over its current connection. This is experimental. See
+[Actions and diagnostics](actions.md#gree_customtest_ifeel_temperature).
+
+On the tested Airy, a Wi-Fi write was accepted immediately but the unit restored
+its own sensor values within about one minute. The optional **External
+temperature transmission** switch on the external thermostat therefore repeats
+the selected room sensor value every 20 seconds. Each refresh includes the two
+beeper properties in their silent state. Transmission also works while the
+external thermostat entity is off. The switch is shown when the unit reports at
+least one of `EnvTem` and `TemSen`.
+
 ## Firmware limits
 
 Local control is known to work on some Airy units with Wi-Fi firmware V2.10.

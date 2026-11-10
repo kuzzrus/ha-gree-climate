@@ -1,8 +1,20 @@
 """Control rules for the external Gree thermostat."""
 
+import math
 from typing import Literal
 
 type ThermostatMode = Literal["cool", "heat"]
+
+
+def ifeel_temperature(value: float, minimum: int = 16, maximum: int = 35) -> int | None:
+    """Round a room temperature to a safe whole-degree I Feel value."""
+    if not math.isfinite(value):
+        return None
+
+    rounded = math.floor(value + 0.5)
+    if not minimum <= rounded <= maximum:
+        return None
+    return rounded
 
 
 def should_run(

@@ -1,6 +1,7 @@
 """External sensor thermostat for a Gree air conditioner."""
 
 import asyncio
+from datetime import datetime, timedelta
 import logging
 import math
 from typing import Any, cast, override
@@ -22,11 +23,14 @@ from homeassistant.const import (
 )
 from homeassistant.core import Event, EventStateChangedData, State, callback
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers.event import async_track_state_change_event
+from homeassistant.helpers.event import (
+    async_track_state_change_event,
+    async_track_time_interval,
+)
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.util.unit_conversion import TemperatureConverter
 
-from .aiogree.api import OperationMode
+from .aiogree.api import GreeProp, OperationMode
 from .aiogree.const import MAX_TEMP_C, MIN_TEMP_C
 from .const import (
     CONF_COOL_ACTIVE_TEMPERATURE,
@@ -36,21 +40,26 @@ from .const import (
     CONF_EXTERNAL_THERMOSTAT_ACTIVATION_HYSTERESIS,
     CONF_EXTERNAL_THERMOSTAT_DEACTIVATION_HYSTERESIS,
     CONF_EXTERNAL_THERMOSTAT_HYSTERESIS,
+    CONF_EXTERNAL_THERMOSTAT_IFEEL,
     CONF_EXTERNAL_THERMOSTAT_SENSOR,
     CONF_HEAT_ACTIVE_TEMPERATURE,
     CONF_HEAT_IDLE_TEMPERATURE,
     DEFAULT_COOL_ACTIVE_TEMPERATURE,
     DEFAULT_COOL_IDLE_TEMPERATURE,
     DEFAULT_EXTERNAL_THERMOSTAT_HYSTERESIS,
+    DEFAULT_EXTERNAL_THERMOSTAT_IFEEL,
     DEFAULT_EXTERNAL_THERMOSTAT_TARGET,
     DEFAULT_HEAT_ACTIVE_TEMPERATURE,
     DEFAULT_HEAT_IDLE_TEMPERATURE,
     DOMAIN,
+    EXTERNAL_THERMOSTAT_IFEEL_INTERVAL,
+    IFEEL_TEMPERATURE_OFFSET,
+    IFEEL_TEMPERATURE_PROPS,
     UNITS_GREE_TO_HA,
 )
 from .coordinator import GreeCoordinator
 from .entity import GreeEntity, GreeEntityDescription
-from .thermostat import ThermostatMode, should_run
+from .thermostat import ThermostatMode, ifeel_temperature, should_run
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -109,6 +118,7 @@ class GreeExternalThermostat(  # pyright: ignore[reportIncompatibleVariableOverr
         self._attr_target_temperature = DEFAULT_EXTERNAL_THERMOSTAT_TARGET
         self._running = False
         self._control_lock = asyncio.Lock()
+        self._ifeel_error_logged = False
 
     @property
     @override
@@ -127,15 +137,24 @@ class GreeExternalThermostat(  # pyright: ignore[reportIncompatibleVariableOverr
                 self._async_sensor_changed,
             )
         )
+        self.async_on_remove(
+            async_track_time_interval(
+                self.hass,
+                self._async_ifeel_interval,
+                timedelta(seconds=EXTERNAL_THERMOSTAT_IFEEL_INTERVAL),
+            )
+        )
 
         self._update_sensor(self.hass.states.get(self._sensor_entity_id))
         await self._async_restore_state()
         self._running = self._infer_running()
         self._update_hvac_action()
 
-        if self._attr_hvac_mode != HVACMode.OFF and self.available:
+        if self.available:
             try:
-                await self._async_control()
+                if self._attr_hvac_mode != HVACMode.OFF:
+                    await self._async_control()
+                await self._async_send_ifeel_temperature()
             except Exception:
                 _LOGGER.exception(
                     "Failed to start external thermostat for %s",
@@ -172,14 +191,16 @@ class GreeExternalThermostat(  # pyright: ignore[reportIncompatibleVariableOverr
     @override
     def _handle_coordinator_update(self) -> None:
         """Reapply control after device state changes."""
-        if self._attr_hvac_mode != HVACMode.OFF and self.available:
+        if self.available:
             self.hass.async_create_task(self._async_control_after_update())
         self.async_write_ha_state()
 
     async def _async_control_after_update(self) -> None:
         """Run control from a coordinator callback without leaking errors."""
         try:
-            await self._async_control()
+            if self._attr_hvac_mode != HVACMode.OFF:
+                await self._async_control()
+            await self._async_send_ifeel_temperature()
         except Exception:
             _LOGGER.exception(
                 "Failed to update external thermostat for %s",
@@ -189,9 +210,11 @@ class GreeExternalThermostat(  # pyright: ignore[reportIncompatibleVariableOverr
     async def _async_sensor_changed(self, event: Event[EventStateChangedData]) -> None:
         """Handle a new external sensor value."""
         self._update_sensor(event.data.get("new_state"))
-        if self._attr_hvac_mode != HVACMode.OFF and self.available:
+        if self.available:
             try:
-                await self._async_control()
+                if self._attr_hvac_mode != HVACMode.OFF:
+                    await self._async_control()
+                await self._async_send_ifeel_temperature()
             except Exception:
                 _LOGGER.exception(
                     "Failed to control %s from external sensor %s",
@@ -199,6 +222,62 @@ class GreeExternalThermostat(  # pyright: ignore[reportIncompatibleVariableOverr
                     self._sensor_entity_id,
                 )
         self.async_write_ha_state()
+
+    async def _async_ifeel_interval(self, _: datetime) -> None:
+        """Refresh the external room temperature while transmission is enabled."""
+        await self._async_send_ifeel_temperature()
+
+    def _ifeel_enabled(self) -> bool:
+        """Return whether experimental external temperature injection is enabled."""
+        options = self.coordinator.device_config.get(CONF_DEVICE_OPTIONS, {})
+        config = options.get(CONF_EXTERNAL_THERMOSTAT, {})
+        return bool(
+            config.get(
+                CONF_EXTERNAL_THERMOSTAT_IFEEL, DEFAULT_EXTERNAL_THERMOSTAT_IFEEL
+            )
+        )
+
+    async def _async_send_ifeel_temperature(self) -> None:
+        """Silently send the external sensor value to the Gree controller."""
+        if (
+            not self._ifeel_enabled()
+            or not self.available
+            or self._attr_current_temperature is None
+            or not any(
+                self.device.supports_property(prop) for prop in IFEEL_TEMPERATURE_PROPS
+            )
+        ):
+            return
+
+        temperature = ifeel_temperature(self._attr_current_temperature)
+        if temperature is None:
+            return
+
+        raw_temperature = temperature + IFEEL_TEMPERATURE_OFFSET
+        values = {
+            **{prop.value: raw_temperature for prop in IFEEL_TEMPERATURE_PROPS},
+            GreeProp.BEEPER.value: 1,
+            GreeProp.BEEPER_NEW.value: 0,
+        }
+
+        async with self._control_lock:
+            try:
+                await self.device.set_props(values)
+            except Exception:
+                if not self._ifeel_error_logged:
+                    _LOGGER.exception(
+                        "Failed to send external temperature for %s",
+                        self.device.unique_id,
+                    )
+                self._ifeel_error_logged = True
+                return
+
+        self._ifeel_error_logged = False
+        _LOGGER.debug(
+            "Sent external temperature %d C to %s",
+            temperature,
+            self.device.unique_id,
+        )
 
     @callback
     def _update_sensor(self, state: State | None) -> None:

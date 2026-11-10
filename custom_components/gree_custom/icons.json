@@ -112,6 +112,9 @@
       },
       "beeper": {
         "default": "mdi:volume-high"
+      },
+      "external_thermostat_ifeel": {
+        "default": "mdi:thermometer-transmit"
       }
     }
   },
@@ -121,6 +124,9 @@
     },
     "get_prop_values": {
       "service": "mdi:bug-outline"
+    },
+    "test_ifeel_temperature": {
+      "service": "mdi:thermometer-check"
     }
   }
 }

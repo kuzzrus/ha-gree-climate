@@ -21,3 +21,21 @@ get_prop_values:
       selector:
         text:
           multiple: true
+
+test_ifeel_temperature:
+  fields:
+    device_id:
+      required: true
+      selector:
+        device:
+          integration: gree_custom
+    temperature:
+      required: true
+      example: 22
+      selector:
+        number:
+          min: 16
+          max: 35
+          step: 1
+          unit_of_measurement: "°C"
+          mode: box
