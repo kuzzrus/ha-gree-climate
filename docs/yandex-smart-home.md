@@ -31,11 +31,11 @@ yandex_smart_home:
       modes:
         fan_speed:
           auto: auto
-          min: low
-          low: medium_low
-          medium: medium
-          high: medium_high
-          max: high
+          one: low
+          two: medium_low
+          three: medium
+          four: medium_high
+          five: high
           quiet: quiet
           turbo: turbo
         swing:
@@ -58,15 +58,15 @@ yandex_smart_home:
             - swing_lower
 ```
 
-This configuration keeps every fan speed. For vertical airflow, Yandex shows seven clear choices instead of numbered buttons. A partial swing range and the matching fixed position share one Yandex button because Yandex has no separate names for the Gree ranges. Selecting the button from Yandex sets the fixed position. All twelve vertical modes and all horizontal modes remain available in Home Assistant.
+This configuration keeps every fan speed. Yandex shows them in this order: **Auto**, **1**, **2**, **3**, **4**, **5**, **Quiet** and **Turbo**. For vertical airflow, Yandex shows seven clear choices instead of fallback numbered buttons. A partial swing range and the matching fixed position share one Yandex button because Yandex has no separate names for the Gree ranges. Selecting the button from Yandex sets the fixed position. All twelve vertical modes and all horizontal modes remain available in Home Assistant.
 
 ## Apply the change
 
 1. Check the Home Assistant configuration and restart Home Assistant.
-2. Delete the old thermostat from the **Дом с Алисой** app.
+2. If the device still has the old thermostat type, delete it from the **Дом с Алисой** app. Keep it when it already has the air conditioner type.
 3. Update the device list for Yaha Cloud.
-4. Open the device again. Its type should be **Кондиционер**. Fan speed buttons should have names such as **Минимальный**, **Низкая**, **Средняя**, **Высокая** and **Максимальный**. Airflow buttons should no longer use numbers.
+4. Open the device again. Its type should be **Кондиционер**. Fan speed buttons should be **Авто**, **1**, **2**, **3**, **4**, **5**, **Тихий** and **Турбо**. Airflow buttons should keep their descriptive names.
 
-Yandex requires the old device to be deleted after a type change. Updating the list without deleting it can leave the old thermostat type in place.
+Yandex requires the old device to be deleted after a type change. Updating the list without deleting it can leave the old thermostat type in place. A fan speed mapping change does not require deletion.
 
 See the Yaha Cloud documentation for [device types](https://docs.yaha-cloud.ru/master/config/entity/#type) and [mode mappings](https://docs.yaha-cloud.ru/master/config/modes/).
