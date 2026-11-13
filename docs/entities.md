@@ -55,7 +55,7 @@ The device page has six configuration number entities for the two hysteresis off
 
 Supported units also get an **External temperature transmission** configuration switch. When it is on, the integration rounds the selected room sensor to a whole degree and sends it to `EnvTem` and `TemSen` every 20 seconds. The command always disables its own beep. Transmission continues when the external thermostat entity is off. It stops when the switch is off or the sensor is unavailable. This feature is experimental because the unit may still replace or ignore the value.
 
-Turning this entity off turns the Gree unit off. Direct changes made through the main climate entity can be replaced by the thermostat on the next sensor or device update. Turn the external thermostat off before using the main entity for direct control.
+Turning this entity off stops external thermostat control. It does not turn the Gree unit off or change its current mode or setpoint. The integration stops applying hysteresis and active or idle setpoints, so you can use the main climate entity for direct control. The unit regulates with its own sensor unless **External temperature transmission** is still on. Turning the external thermostat on again resumes external sensor control and can replace direct changes on the next sensor or device update.
 
 The entity becomes unavailable when the selected sensor has no numeric value or when the Gree device is unavailable. It keeps its last command and waits for valid data. Its target temperature and mode are restored after a Home Assistant restart.
 

@@ -19,6 +19,8 @@ yandex_smart_home:
 
 Do not keep the old virtual thermostat based on a sensor and `input_number` after moving to this entity. It would give Yandex two controls for the same room target.
 
+Turning this thermostat off in Yandex stops its hysteresis control but does not turn the Gree unit off. The unit keeps its current mode and setpoint. It uses its own temperature control unless **External temperature transmission** is still on. Use the main air conditioner entity when you want to change or turn off the physical unit.
+
 ## Add the Yandex mapping
 
 Add this block to `configuration.yaml`. If `yandex_smart_home:` already exists, merge `entity_config` into the existing block. Do not add a second `yandex_smart_home:` key.

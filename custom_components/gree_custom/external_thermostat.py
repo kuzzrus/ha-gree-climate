@@ -442,17 +442,6 @@ class GreeExternalThermostat(  # pyright: ignore[reportIncompatibleVariableOverr
             self.coordinator.async_update_listeners()
             await self.coordinator.async_request_refresh()
 
-    async def _async_turn_device_off(self) -> None:
-        """Turn the physical device off once."""
-        if not self.device.power_mode:
-            return
-        self.device.set_power_mode(False)
-        if self.coordinator.feature_auto_light:
-            self.device.set_feature_light(False)
-        await self.coordinator.push_device_status()
-        self.coordinator.async_update_listeners()
-        await self.coordinator.async_request_refresh()
-
     def _ensure_available(self, require_sensor: bool = True) -> None:
         """Raise the standard service error when control is unavailable."""
         if not super().available or (
@@ -496,10 +485,10 @@ class GreeExternalThermostat(  # pyright: ignore[reportIncompatibleVariableOverr
 
         try:
             if hvac_mode == HVACMode.OFF:
-                self._attr_hvac_mode = HVACMode.OFF
-                self._running = False
-                self._update_hvac_action()
-                await self._async_turn_device_off()
+                async with self._control_lock:
+                    self._attr_hvac_mode = HVACMode.OFF
+                    self._running = False
+                    self._update_hvac_action()
             else:
                 self._attr_hvac_mode = hvac_mode
                 self._last_hvac_mode = hvac_mode
@@ -519,5 +508,5 @@ class GreeExternalThermostat(  # pyright: ignore[reportIncompatibleVariableOverr
 
     @override
     async def async_turn_off(self) -> None:
-        """Turn off the thermostat and physical device."""
+        """Stop thermostat control without changing the physical device."""
         await self.async_set_hvac_mode(HVACMode.OFF)

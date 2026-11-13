@@ -115,7 +115,7 @@ The two temperature sensor fields are independent. The sensor above changes only
 
 After the external thermostat is created, its two hysteresis offsets and four setpoints appear as configuration number entities on the device page. The experimental external temperature transmission appears there as a configuration switch when the unit reports both required temperature properties. Changes are saved and applied at once. Reconfigure is only needed to change the room sensor or to add or remove the external thermostat.
 
-The external thermostat behavior is described in [Entities](entities.md#external-thermostat).
+The external thermostat behavior is described in [Entities](entities.md#external-thermostat). Turning it off stops external sensor control but leaves the Gree unit running with its current settings.
 
 ## Reconfigure
 
