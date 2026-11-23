@@ -286,6 +286,28 @@ async def test_ambiguous_outdoor_temperature_prefers_offset(
         await transport.disconnect()
 
 
+async def test_temporary_zero_does_not_select_plain_outdoor_temperature(
+    unit: FakeGreeDevice,
+) -> None:
+    """A temporary zero must not turn a later raw 39 into 39 degrees."""
+    unit.values[GreeProp.SENSOR_OUTSIDE_TEMPERATURE_1.value] = 42
+    device, transport = await bind(unit)
+
+    try:
+        assert device.outdoors_temperature_c == 2
+
+        unit.values[GreeProp.SENSOR_OUTSIDE_TEMPERATURE_1.value] = 0
+        await device.fetch_device_status()
+        assert device.outdoors_temperature_c == 0
+
+        unit.values[GreeProp.SENSOR_OUTSIDE_TEMPERATURE_1.value] = 39
+        await device.fetch_device_status()
+
+        assert device.outdoors_temperature_c == -1
+    finally:
+        await transport.disconnect()
+
+
 async def test_push_sends_only_what_changed(
     unit: FakeGreeDevice, bound: GreeDevice
 ) -> None:
