@@ -662,11 +662,13 @@ class GreeDevice:
         ):
             if self._state.supports(prop):
                 raw_c = self._state.get(prop, None)
-                return (
-                    int(self._temp_processor_outdoors.evaluate(raw_c))
-                    if raw_c is not None
-                    else None
-                )
+                if raw_c is None:
+                    return None
+                if raw_c == 0:
+                    # Some units report zero while the outdoor sensor starts.
+                    # Show it, but do not let it select the plain encoding.
+                    return 0
+                return int(self._temp_processor_outdoors.evaluate(raw_c))
 
         return None
 
